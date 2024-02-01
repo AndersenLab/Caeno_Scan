@@ -10,8 +10,13 @@ tropicalis_bim <- read.csv('test_data/c_tropicalis/ct.comp.map/ct.comp.map_0.05.
 # Load GFF data, Note change based on where the files are
 elegans_gff <- read.csv('test_data/c_elegans/genomes/PRJNA13758/WS283/csq/PRJNA13758.WS283.csq.chrI.gff3', sep='\t')
 elegans_gff_filtered <- filter(elegans_gff, type == 'mRNA') # filtered for just mRNA
+
 briggsae_gff <- read.csv('test_data/c_briggsae/genomes/QX1410_nanopore/Feb2020/csq/QX1410_nanopore.Feb2020.csq.chrI.gff3', sep='\t')
+briggsae_gff_filtered <- filter(briggsae_gff, type == 'mRNA') # filtered for just mRNA
+
 tropicalis_gff <- read.csv('test_data/c_tropicalis/genomes/NIC58_nanopore/June2021/csq/NIC58_nanopore.June2021.csq.chrI.gff3', sep='\t')
+tropicalis_gff_filtered <- filter(tropicalis_gff, type == 'mRNA') # filtered for just mRNA
+
 # Creating function
 annotateSNPs <- function(bim, gff, buffer){
 # Convert PLINK chromosome to roman numeral to match GFF file
@@ -33,8 +38,9 @@ bim$Gene_ID <- NA
 return(bim)
 }
 # Test function with elegans
-annotated_elegans <- annotateSNPs(elegans_bim, elegans_gff_filtered, 100)
+#annotated_elegans <- annotateSNPs(elegans_bim, elegans_gff_filtered, 100)
 # Test function with briggsae
-annotated_briggsae <- annotateSNPs(briggsae_bim, briggsae_gff, 100)
+annotated_briggsae <- annotateSNPs(briggsae_bim, briggsae_gff_filtered, 100)
+print(head(annotated_briggsae))
 # Test function with tropicalis
-annotated_tropicalis <- annotateSNPs(tropicalis_bim, tropicalis_gff, 100)
+#annotated_tropicalis <- annotateSNPs(tropicalis_bim, tropicalis_gff, 100)
