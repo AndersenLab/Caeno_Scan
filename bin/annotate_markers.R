@@ -44,3 +44,6 @@ annotated_briggsae <- annotateSNPs(briggsae_bim, briggsae_gff_filtered, 100)
 print(head(annotated_briggsae))
 # Test function with tropicalis
 #annotated_tropicalis <- annotateSNPs(tropicalis_bim, tropicalis_gff, 100)
+
+
+#maya_test
