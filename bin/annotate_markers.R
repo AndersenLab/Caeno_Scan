@@ -2,6 +2,7 @@
 library(dplyr)
 library(tidyverse)
 library(tidyr)
+library(readr)
 library(ggplot2)
 library(data.table)
 library(GenomicRanges)
@@ -51,40 +52,51 @@ return(bim)
 
 
 # Test annotate function with elegans
-#annotated_elegans <- annotateSNPs(elegans_bim, elegans_gff_filtered, 100)
+annotated_elegans <- annotateSNPs(elegans_bim, elegans_gff_filtered, 100)
 
 # Test function with briggsae
-#annotated_briggsae <- annotateSNPs(briggsae_bim, briggsae_gff_filtered, 100)
+annotated_briggsae <- annotateSNPs(briggsae_bim, briggsae_gff_filtered, 100)
 
 # Test function with tropicalis
-annotated_tropicalis <- annotateSNPs(tropicalis_bim, tropicalis_gff, 100)
+annotated_tropicalis <- annotateSNPs(tropicalis_bim, tropicalis_gff_filtered, 100)
 
 #Read in orthogroups
-OG <- fread('~/Desktop/Erik/Caeno_Scan/input_data/all_species/orthogroups/02.21.22_orthogroups/Orthogroups.txt', sep = ':', header = FALSE) %>% 
-  separate_rows(V2, sep = " ")
-colnames(OG) <- c('OG', 'Gene_ID')
-OG$Gene_ID <- sub("^Transcript_", "", OG$Gene_ID)
+OG <- readr::read_tsv('~/Desktop/Erik/Caeno_Scan/input_data/all_species/orthogroups/20240206_Orthogroups/masterOrthoDB.tsv') 
+colnames(OG) <- c("Orthogroup", "A", "B", "C")
+OG = unite(OG, Gene_ID, c("A", "B","C"), sep = " ") %>% 
+  separate_rows(Gene_ID, sep = ",") %>% 
+  separate_rows(Gene_ID, sep = " ")
+OG$Gene_ID <- sub("Transcript_", "", OG$Gene_ID)
+OG$Gene_ID <- sub("transcript_", "", OG$Gene_ID) 
+
 
 # function with OGs 
 add_OG <- function(abim, ortho) {
+  
 # Join the two tables based on 'Gene_ID'
 merged_data <- left_join(abim, ortho, by = "Gene_ID")
 
 # Group by 'Gene_ID' and make 'OG_list' as a list of unique OG values
 result <- merged_data %>%
   group_by(Gene_ID) %>%
-  summarize(OG_list = list(unique(OG, na.rm = TRUE)))
+  summarize(OG_list = list(unique(Orthogroup, na.rm = TRUE)))
 
 # Merge the summarized result back to the original 
 final_data <- left_join(abim, result, by = "Gene_ID")
 
 return(merged_data)
+
 }
 
 # test function with elegans
-annotated_elegans_withOG <- add_OG(annotated_elegans, OG)
+OG_elegans <- add_OG(annotated_elegans, OG)
 # test function with briggsae
-annotated_briggsae_withOG <- add_OG(annotated_briggsae, OG)
+OG_briggsae <- add_OG(annotated_briggsae, OG)
 # test function with tropicalis
-annotated_tropicalis_withOG <- add_OG(annotated_tropicalis, OG)
-print(annotated_tropicalis_withOG)
+OG_tropicalis <- add_OG(annotated_tropicalis, OG)
+
+
+# Read in average allele frequency data
+
+#allele_F <- read.table('~/Desktop/Erik/Caeno_Scan/test_data/<sp_id>/<c*>.comp.map/*.frq)
+
