@@ -6,10 +6,12 @@ library(readr)
 library(ggplot2)
 library(data.table)
 library(GenomicRanges)
+
+
 # Load Bim data , Note change based on where the files are
-elegans_bim <- read.csv('~/Desktop/Erik/Caeno_Scan/test_data/c_elegans/ce.comp.map/ce.comp.map_0.05.bim', sep='\t', header = FALSE, col.names = c("chrom", "SNP_ID", "CM", "BP", "A1", "A2"))
-briggsae_bim <-  read.csv('~/Desktop/Erik/Caeno_Scan/test_data/c_briggsae/cb.comp.map/cb.comp.map_0.05.bim', sep='\t', header = FALSE, col.names = c("chrom", "SNP_ID", "CM", "BP", "A1", "A2"))
-tropicalis_bim <- read.csv('~/Desktop/Erik/Caeno_Scan/test_data/c_tropicalis/ct.comp.map/ct.comp.map_0.05.bim', sep='\t', header = FALSE, col.names = c("chrom", "SNP_ID", "CM", "BP", "A1", "A2"))
+elegans_bim <- read.csv('~/Desktop/Erik/Caeno_Scan/test_data/c_elegans/ce.comp.map/ce.comp.map_0.05.bim', sep='\t', header = FALSE, col.names = c("chrom", "SNP", "CM", "BP", "A1", "A2"))
+briggsae_bim <-  read.csv('~/Desktop/Erik/Caeno_Scan/test_data/c_briggsae/cb.comp.map/cb.comp.map_0.05.bim', sep='\t', header = FALSE, col.names = c("chrom", "SNP", "CM", "BP", "A1", "A2"))
+tropicalis_bim <- read.csv('~/Desktop/Erik/Caeno_Scan/test_data/c_tropicalis/ct.comp.map/ct.comp.map_0.05.bim', sep='\t', header = FALSE, col.names = c("chrom", "SNP", "CM", "BP", "A1", "A2"))
 
 # Load GFF data, Note change based on where the files are
 elegans_gff <- read.csv('~/Desktop/Erik/Caeno_Scan/test_data/c_elegans/genomes/PRJNA13758/WS283/csq/PRJNA13758.WS283.csq.chrI.gff3', sep='\t')
@@ -62,15 +64,16 @@ annotated_tropicalis <- annotateSNPs(tropicalis_bim, tropicalis_gff_filtered, 10
 
 #Read in orthogroups
 OG <- readr::read_tsv('~/Desktop/Erik/Caeno_Scan/input_data/all_species/orthogroups/20240206_Orthogroups/masterOrthoDB.tsv') 
-colnames(OG) <- c("Orthogroup", "A", "B", "C")
-OG = unite(OG, Gene_ID, c("A", "B","C"), sep = " ") %>% 
+colnames(OG) <- c("Orthogroup", "Briggsae", "Tropicalis", "Elegans")
+cpOG <- OG
+OG = unite(OG, Gene_ID, c("Briggsae", "Tropicalis", "Elegans"), sep = " ") %>% 
   separate_rows(Gene_ID, sep = ",") %>% 
   separate_rows(Gene_ID, sep = " ")
 OG$Gene_ID <- sub("Transcript_", "", OG$Gene_ID)
 OG$Gene_ID <- sub("transcript_", "", OG$Gene_ID) 
 
 
-# function with OGs 
+# function to add OGs 
 add_OG <- function(abim, ortho) {
   
 # Join the two tables based on 'Gene_ID'
@@ -98,5 +101,154 @@ OG_tropicalis <- add_OG(annotated_tropicalis, OG)
 
 # Read in average allele frequency data
 
-#allele_F <- read.table('~/Desktop/Erik/Caeno_Scan/test_data/<sp_id>/<c*>.comp.map/*.frq)
+AF_ce <- read.table('~/Desktop/Erik/Caeno_Scan/test_data/c_elegans/ce.comp.map/ce.comp.map_0.05.chr1.frq', header = TRUE)
+AF_cb <- read.table('~/Desktop/Erik/Caeno_Scan/test_data/c_briggsae/cb.comp.map/cb.comp.map_0.05.chr1.frq', header = TRUE)
+AF_ct <- read.table('~/Desktop/Erik/Caeno_Scan/test_data/c_tropicalis/ct.comp.map/ct.comp.map_0.05.chr1.frq', header = TRUE)
+
+
+# create function to add MAFs
+add_MAFs <- function(abim, allele_df) {
+  # Filter AF frame to join
+  filt_AF <- select(allele_df, SNP, MAF)
+  
+  # Join Data
+  merged_data <- merge(abim, filt_AF, by = "SNP")
+  
+  return(merged_data)
+}
+
+# test function with elegans
+all_elegans <- add_MAFs(OG_elegans, AF_ce)
+# test function with briggsae
+all_briggsae <- add_MAFs(OG_briggsae, AF_cb)
+# test function with tropicalis
+all_tropicalis <- add_MAFs(OG_tropicalis, AF_ct)
+
+
+
+# Filter out NA values so just the GeneIDs
+
+filtered_all_elegans <- all_elegans %>% filter(!is.na(Gene_ID))
+filtered_all_briggsae <- all_briggsae %>% filter(!is.na(Gene_ID))
+filtered_all_tropicalis <- all_tropicalis %>% filter(!is.na(Gene_ID))
+
+
+# Count the occurrences of each Gene_ID
+count_genes <- function(df) {
+  gene_counts <- df %>% 
+    group_by(Gene_ID, Orthogroup) %>% 
+    summarise(count = n()) %>%
+    filter(count > 1)
+  # Create a new data frame with Gene_ID and their counts
+  new_df <- data.frame(Gene_ID = gene_counts$Gene_ID, Count = gene_counts$count, Orthogroup = gene_counts$Orthogroup)
+
+  return(new_df)
+  
+}
+
+
+# test function
+genes_elegans <- count_genes(filtered_all_elegans)
+genes_briggsae <- count_genes(filtered_all_briggsae)
+genes_tropicalis <- count_genes(filtered_all_tropicalis)
+
+
+#Plot the counts
+elegans_hist<- ggplot(genes_elegans, aes(x = Count)) + geom_histogram(fill = 'cyan', color = "black", binwidth = 1) +
+  labs(title = "Histogram of Elegans Counts w 100 bp buffer",
+       x = "Number SNPs per Gene",
+       y = "Frequency")
+#print(elegans_hist)
+
+briggsae_hist<- ggplot(genes_briggsae, aes(x = Count)) + geom_histogram(fill = "deeppink", color = "black", binwidth = 1) +
+  labs(title = "Histogram of Birggsae Counts w 100 bp buffer",
+       x = "Number SNPs per Gene",
+       y = "Frequency")
+#print(briggsae_hist)
+tropicalis_hist<- ggplot(genes_tropicalis, aes(x = Count)) + geom_histogram(fill = "blueviolet", color = "black", binwidth = 1) +
+  labs(title = "Histogram of Tropicalis Counts w 100 bp buffer",
+       x = "Number SNPs per Gene",
+       y = "Frequency")
+#print(tropicalis_hist)
+
+
+# create 1:1:1 OGs
+# Function to determine the label based on count
+get_ratio <- function(x) {
+  if (is.na(x)) {
+    return("none")
+  } else {
+    count <- length(unlist(strsplit(x, ", ")))
+    if (count == 1) {
+      return("1")
+    } else {
+      return("many")
+    }
+  }
+}
+
+# Apply the function to each row and create new column
+cpOG$Ratio <- paste0(
+  sapply(cpOG$Briggsae, get_ratio), ":",
+  sapply(cpOG$Tropicalis, get_ratio), ":",
+  sapply(cpOG$Elegans, get_ratio)
+)
+
+OG_structure <- cpOG[, c("Orthogroup", "Ratio")]
+one_one_one_og_var <- subset(OG_structure, Ratio == "1:1:1") 
+  
+
+
+# Venn Diagram
+ce_one_one_one_var_ogs <- merge(one_one_one_og_var, filtered_all_elegans, by = "Orthogroup") 
+ce_one_one_one_var_ogs <- subset(ce_one_one_one_var_ogs, Ratio == "1:1:1")
+
+cb_one_one_one_var_ogs <- merge(one_one_one_og_var, filtered_all_briggsae, by = "Orthogroup") 
+cb_one_one_one_var_ogs <- subset(ce_one_one_one_var_ogs, Ratio == "1:1:1")
+
+ct_one_one_one_var_ogs <- merge(one_one_one_og_var, filtered_all_tropicalis, by = "Orthogroup") 
+ct_one_one_one_var_ogs <- subset(ce_one_one_one_var_ogs, Ratio == "1:1:1")
+
+library(VennDiagram)
+#venn.diagram()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
