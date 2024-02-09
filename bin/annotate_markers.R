@@ -206,7 +206,35 @@ ggsave(
   dpi = 300
 )
 
+# Plot on a shared axis using geom_facet_grid
 
+## add a species column to each data frame
+genes_elegans$Species <- "Elegans"
+genes_briggsae$Species <- "Briggsae"
+genes_tropicalis$Species <- "Tropicalis"
+
+## combine all the data
+all_counts <- rbind(genes_elegans, genes_briggsae, genes_tropicalis)
+
+
+## plot the data
+all_counts_plot <- ggplot(all_counts, aes(x = Count)) + geom_histogram(fill = "cyan", color = "black", binwidth = 1) +
+  labs(title = "Histogram of Counts w 100 bp buffer",
+       x = "Number SNPs per Gene",
+       y = "Frequency") +
+  facet_grid(Species ~ ., scales = "fixed")
+
+#print(all_counts_plot)
+
+ggsave(
+  glue::glue("{figure_dir}/{date}.all_counts_plot.png"),
+  plot = all_counts_plot,
+  device = "png",
+  width = 7.5,
+  height = 7.5,
+  units = "in",
+  dpi = 300
+)
 
 # create 1:1:1 OGs
 # Function to determine the label based on count
