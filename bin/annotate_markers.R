@@ -7,6 +7,10 @@ library(ggplot2)
 library(data.table)
 library(GenomicRanges)
 
+figure_dir = "analysis/20240209_OG_SNPs_test/figures"
+
+#get date and time format as a variable YYYYMMDD_HHMM
+date <- format(Sys.time(), "%Y%m%d_%H%M")
 
 # Load Bim data , Note change based on where the files are
 elegans_bim <- read.csv('test_data/c_elegans/ce.comp.map/ce.comp.map_0.05.bim', sep='\t', header = FALSE, col.names = c("chrom", "SNP", "CM", "BP", "A1", "A2"))
@@ -160,16 +164,48 @@ elegans_hist<- ggplot(genes_elegans, aes(x = Count)) + geom_histogram(fill = 'cy
        y = "Frequency")
 #print(elegans_hist)
 
+ggsave(
+  glue::glue("{figure_dir}/{date}.elegans_hist.png"),
+  plot = elegans_hist,
+  device = "png",
+  width = 7.5,
+  height = 7.5,
+  units = "in",
+  dpi = 300
+)
+
 briggsae_hist<- ggplot(genes_briggsae, aes(x = Count)) + geom_histogram(fill = "deeppink", color = "black", binwidth = 1) +
   labs(title = "Histogram of Birggsae Counts w 100 bp buffer",
        x = "Number SNPs per Gene",
        y = "Frequency")
 #print(briggsae_hist)
+
+ggsave(
+  glue::glue("{figure_dir}/{date}.briggsae_hist.png"),
+  plot = briggsae_hist,
+  device = "png",
+  width = 7.5,
+  height = 7.5,
+  units = "in",
+  dpi = 300
+)
+
 tropicalis_hist<- ggplot(genes_tropicalis, aes(x = Count)) + geom_histogram(fill = "blueviolet", color = "black", binwidth = 1) +
   labs(title = "Histogram of Tropicalis Counts w 100 bp buffer",
        x = "Number SNPs per Gene",
        y = "Frequency")
 #print(tropicalis_hist)
+
+ggsave(
+  glue::glue("{figure_dir}/{date}.tropicalis_hist.png"),
+  plot = tropicalis_hist,
+  device = "png",
+  width = 7.5,
+  height = 7.5,
+  units = "in",
+  dpi = 300
+)
+
 
 
 # create 1:1:1 OGs
