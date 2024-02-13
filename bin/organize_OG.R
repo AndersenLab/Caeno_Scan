@@ -11,9 +11,9 @@ library(optparse)
 # Set up command line arguments
 # Set up command line arguments
 option_list = list(
-  make_option(c("-e", "-ce_anno_bim"),  type="character"),
-  make_option(c("-b", "--cb_anno_bim"),  type="character"),
-  make_option(c("-t", "--ct_anno_bim"),  type="character"),
+  make_option(c("-e", "-ce_bim"),  type="character"),
+  make_option(c("-b", "--cb_bim"),  type="character"),
+  make_option(c("-t", "--ct_bim"),  type="character"),
   make_option(c("-o", "--out_dir"),  type="character")
 )
 
@@ -103,13 +103,13 @@ OG_structure <- cpOG[, c("Orthogroup", "Ratio")]
 one_one_one_og_var <- subset(OG_structure, Ratio == "1:1:1") 
 
 # Venn Diagram
-ce_one_one_one_var_ogs <- merge(one_one_one_og_var, params$ce_anno_bim, by = "Orthogroup")  %>%
+ce_one_one_one_var_ogs <- merge(one_one_one_og_var, params$ce_bim, by = "Orthogroup")  %>%
   pull(Orthogroup)
 
-cb_one_one_one_var_ogs <- merge(one_one_one_og_var, params$cb_anno_bim, by = "Orthogroup") %>%
+cb_one_one_one_var_ogs <- merge(one_one_one_og_var, params$cb_bim, by = "Orthogroup") %>%
   pull(Orthogroup)
 
-ct_one_one_one_var_ogs <- merge(one_one_one_og_var, params$ct_anno_bim, by = "Orthogroup") %>%
+ct_one_one_one_var_ogs <- merge(one_one_one_og_var, params$ct_bim, by = "Orthogroup") %>%
   pull(Orthogroup)
 
 library(VennDiagram)
