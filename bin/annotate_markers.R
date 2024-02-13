@@ -7,10 +7,12 @@ library(ggplot2)
 library(data.table)
 library(GenomicRanges)
 
-figure_dir = "analysis/20240209_OG_SNPs_test/figures"
-
 #get date and time format as a variable YYYYMMDD_HHMM
 date <- format(Sys.time(), "%Y%m%d_%H%M")
+
+figure_dir = glue::glue"analysis/{date}_OG_SNPs_test/figures"
+
+
 
 # Load Bim data , Note change based on where the files are
 elegans_bim <- read.csv('~/Desktop/Erik/Caeno_Scan/test_data/c_elegans/ce.comp.map/ce.comp.map_0.05.bim', sep='\t', header = FALSE, col.names = c("chrom", "SNP", "CM", "BP", "A1", "A2"))
