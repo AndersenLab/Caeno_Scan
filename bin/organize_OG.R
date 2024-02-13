@@ -28,6 +28,8 @@ if (!dir.exists(params$out_dir)) {
   dir.create(params$out_dir)
 }
 
+out_dir = params$out_dir
+
 figure_dir = glue::glue("{out_dir}/figures")
 
 # Check if the directory exists, if not create it
