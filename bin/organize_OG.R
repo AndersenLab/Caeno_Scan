@@ -11,7 +11,7 @@ library(optparse)
 # Set up command line arguments
 # Set up command line arguments
 option_list = list(
-  make_option(c("-e", "-ce_bim"),  type="character"),
+  make_option(c("-e", "--ce_bim"),  type="character"),
   make_option(c("-b", "--cb_bim"),  type="character"),
   make_option(c("-t", "--ct_bim"),  type="character"),
   make_option(c("-o", "--out_dir"),  type="character")
