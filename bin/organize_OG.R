@@ -6,16 +6,38 @@ library(readr)
 library(ggplot2)
 library(data.table)
 
+# Set up command line arguments
+# Set up command line arguments
+option_list = list(
+  make_option(c("-e", "-elegans_anno_bim"),  type="character"),
+  make_option(c("-b", "--briggsae_anno_bim"),  type="character"),
+  make_option(c("-t", "--tropicalis_anno_bim"),  type="character"),
+  make_option(c("-o", "--out_dir"),  type="character")
+)
+
+# Parse the arguments
+opt_parser = OptionParser(option_list=option_list, add_help_option=FALSE)
+params = parse_args(opt_parser)
 
 ### Uses annotated bim files from annotate_markers.R script ######
 
-figure_dir = "analysis/20240209_OG_SNPs_test/figures"
+# check if the directory exists, if not create it
+if (!dir.exists(params$out_dir)) {
+  dir.create(params$out_dir)
+}
+
+figure_dir = glue::glue("{out_dir}/figures")
+
+# Check if the directory exists, if not create it
+if (!dir.exists(figure_dir)) {
+  dir.create(figure_dir)
+}
 
 #get date and time format as a variable YYYYMMDD_HHMM
 date <- format(Sys.time(), "%Y%m%d_%H%M")
 
 #Read in orthogroups
-OG <- readr::read_tsv('~/Desktop/Erik/Caeno_Scan/input_data/all_species/orthogroups/20240206_Orthogroups/masterOrthoDB.tsv') 
+OG <- readr::read_tsv('input_data/all_species/orthogroups/20240206_Orthogroups/masterOrthoDB.tsv') 
 colnames(OG) <- c("Orthogroup", "Briggsae", "Tropicalis", "Elegans")
 cpOG <- OG
 OG <- mutate(OG, Gene_ID =paste(Briggsae, Tropicalis, Elegans)) %>% 
@@ -79,20 +101,20 @@ OG_structure <- cpOG[, c("Orthogroup", "Ratio")]
 one_one_one_og_var <- subset(OG_structure, Ratio == "1:1:1") 
 
 # Venn Diagram
-ce_one_one_one_var_ogs <- merge(one_one_one_og_var, filtered_all_elegans, by = "Orthogroup")  %>%
+ce_one_one_one_var_ogs <- merge(one_one_one_og_var, params$elegans_anno_bim, by = "Orthogroup")  %>%
   pull(Orthogroup)
 
-cb_one_one_one_var_ogs <- merge(one_one_one_og_var, filtered_all_briggsae, by = "Orthogroup") %>%
+cb_one_one_one_var_ogs <- merge(one_one_one_og_var, params$briggsae_anno_bim, by = "Orthogroup") %>%
   pull(Orthogroup)
 
-ct_one_one_one_var_ogs <- merge(one_one_one_og_var, filtered_all_tropicalis, by = "Orthogroup") %>%
+ct_one_one_one_var_ogs <- merge(one_one_one_og_var, params$tropicalis_anno_bim, by = "Orthogroup") %>%
   pull(Orthogroup)
 
 library(VennDiagram)
 venn.diagram(
   x = list(ce_one_one_one_var_ogs, cb_one_one_one_var_ogs, ct_one_one_one_var_ogs),
   category.names = c("C. elegans" , "C. briggsae " , "C. tropicalis"),
-  filename = 'analysis/20240209_OG_SNPs_test/figures/overlap_1_1_1_var_ogs.png',
+  filename = glue::glue('{figure_dir}/{date}_overlap_1_1_1_var_ogs.png'),
   output=TRUE,
   imagetype="png"
 )
