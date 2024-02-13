@@ -6,27 +6,47 @@ library(readr)
 library(ggplot2)
 library(data.table)
 library(GenomicRanges)
+library(optparse)
 
 #get date and time format as a variable YYYYMMDD_HHMM
 date <- format(Sys.time(), "%Y%m%d_%H%M")
 
-figure_dir = glue::glue"analysis/{date}_OG_SNPs_test/figures"
+figure_dir = glue::glue("analysis/{date}_OG_SNPs_test/figures")
 
+# set up command line arguments
+option_list = list(
+  make_option(c("-e", "--elegans_bim"),  type="character"),
+  make_option(c("-b", "--briggsae_bim"),  type="character"),
+  make_option(c("-t", "--tropicalis_bim"),  type="character"),
+  make_option(c("-ge", "--elegans_gff"),  type="character"),
+  make_option(c("-gb", "--briggsae_gff"), type="character"),
+  make_option(c("-gt", "--tropicalis_gff"), type="character"),
+  make_option(c("-ae", "--elegans_freq"), type="character"),
+  make_option(c("-ab", "--briggsae_freq"), type="character"),
+  make_option(c("-at", "--tropicalis_freq"), type="character"),
+  make_option(c("-og", "--orthogroups"), type="character"),
+  make_option(c("-o", "--output"), type="character")
+)
+
+
+# Parse the arguments
+opt_parser = OptionParser(option_list=option_list)
+params = parse_args(opt_parser)
 
 
 # Load Bim data , Note change based on where the files are
-elegans_bim <- read.csv('test_data/c_elegans/ce.comp.map/ce.comp.map_0.05.bim', sep='\t', header = FALSE, col.names = c("chrom", "SNP", "CM", "BP", "A1", "A2"))
-briggsae_bim <-  read.csv('test_data/c_briggsae/cb.comp.map/cb.comp.map_0.05.bim', sep='\t', header = FALSE, col.names = c("chrom", "SNP", "CM", "BP", "A1", "A2"))
-tropicalis_bim <- read.csv('test_data/c_tropicalis/ct.comp.map/ct.comp.map_0.05.bim', sep='\t', header = FALSE, col.names = c("chrom", "SNP", "CM", "BP", "A1", "A2"))
+elegans_bim <- read.csv(params$elegans_bim, sep='\t', header = FALSE, col.names = c("chrom", "SNP", "CM", "BP", "A1", "A2"))
+briggsae_bim <-  read.csv(params$briggsae_bim, sep='\t', header = FALSE, col.names = c("chrom", "SNP", "CM", "BP", "A1", "A2"))
+tropicalis_bim <- read.csv(params$tropicalis_bim, sep='\t', header = FALSE, col.names = c("chrom", "SNP", "CM", "BP", "A1", "A2"))
 
 # Load GFF data, Note change based on where the files are
-elegans_gff <- read.csv('test_data/c_elegans/genomes/PRJNA13758/WS283/csq/PRJNA13758.WS283.csq.chrI.gff3', sep='\t')
+elegans_gff <- read.csv(params$elegans_gff, sep='\t')
 elegans_gff_filtered <- filter(elegans_gff, type == 'mRNA') # filtered for just mRNA
 
-briggsae_gff <- read.csv('test_data/c_briggsae/genomes/QX1410_nanopore/Feb2020/csq/QX1410_nanopore.Feb2020.csq.chrI.gff3', sep='\t')
+briggsae_gff <- read.csv(params$briggsae_gff, sep='\t')
 briggsae_gff_filtered <- filter(briggsae_gff, type == 'mRNA') # filtered for just mRNA
 
-tropicalis_gff <- read.csv('test_data/c_tropicalis/genomes/NIC58_nanopore/June2021/csq/NIC58_nanopore.June2021.csq.chrI.gff3', sep='\t')
+tropicalis_gff <- read.csv(params$tropicalis_gff, sep='\t')
 tropicalis_gff_filtered <- filter(tropicalis_gff, type == 'mRNA') # filtered for just mRNA
 
 # Creating function to annotate the snps 
@@ -60,19 +80,19 @@ return(bim)
 
 
 # Test annotate function with elegans
-annotated_elegans <- annotateSNPs(elegans_bim, elegans_gff_filtered, 100)
+annotated_elegans <- annotateSNPs(elegans_bim, elegans_gff_filtered, 0)
 
 # Test function with briggsae
-annotated_briggsae <- annotateSNPs(briggsae_bim, briggsae_gff_filtered, 100)
+annotated_briggsae <- annotateSNPs(briggsae_bim, briggsae_gff_filtered, 0)
 
 # Test function with tropicalis
-annotated_tropicalis <- annotateSNPs(tropicalis_bim, tropicalis_gff_filtered, 100)
+annotated_tropicalis <- annotateSNPs(tropicalis_bim, tropicalis_gff_filtered, 0)
 
 # Read in average allele frequency data
 
-AF_ce <- read.table('test_data/c_elegans/ce.comp.map/ce.comp.map_0.05.chr1.frq', header = TRUE)
-AF_cb <- read.table('test_data/c_briggsae/cb.comp.map/cb.comp.map_0.05.chr1.frq', header = TRUE)
-AF_ct <- read.table('test_data/c_tropicalis/ct.comp.map/ct.comp.map_0.05.chr1.frq', header = TRUE)
+AF_ce <- read.table(params$elegans_freq, header = TRUE)
+AF_cb <- read.table(params$briggsae_freq, header = TRUE)
+AF_ct <- read.table(params$tropicalis_freq, header = TRUE)
 
 
 # create function to add MAFs
