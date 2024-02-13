@@ -73,11 +73,11 @@ add_OG <- function(abim, ortho) {
 }
 
 # test function with elegans
-OG_elegans <- add_OG(annotated_elegans, OG)
-# test function with briggsae
-OG_briggsae <- add_OG(annotated_briggsae, OG)
-# test function with tropicalis
-OG_tropicalis <- add_OG(annotated_tropicalis, OG)
+# OG_elegans <- add_OG(annotated_elegans, OG)
+# # test function with briggsae
+# OG_briggsae <- add_OG(annotated_briggsae, OG)
+# # test function with tropicalis
+# OG_tropicalis <- add_OG(annotated_tropicalis, OG)
 
 # create 1:1:1 OGs
 # Function to determine the label based on count
