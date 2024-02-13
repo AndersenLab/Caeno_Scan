@@ -116,14 +116,19 @@ cpOG$Ratio <- paste0(
 OG_structure <- cpOG[, c("Orthogroup", "Ratio")]
 one_one_one_og_var <- subset(OG_structure, Ratio == "1:1:1") 
 
+# Load the annotated bim files
+ce_bim <- readr::read_tsv(params$ce_bim)
+cb_bim <- readr::read_tsv(params$cb_bim)
+ct_bim <- readr::read_tsv(params$ct_bim)
+
 # Venn Diagram
-ce_one_one_one_var_ogs <- merge(one_one_one_og_var, params$ce_bim, by = "Orthogroup")  %>%
+ce_one_one_one_var_ogs <- merge(one_one_one_og_var, ce_bim, by = "Orthogroup")  %>%
   pull(Orthogroup)
 
-cb_one_one_one_var_ogs <- merge(one_one_one_og_var, params$cb_bim, by = "Orthogroup") %>%
+cb_one_one_one_var_ogs <- merge(one_one_one_og_var, cb_bim, by = "Orthogroup") %>%
   pull(Orthogroup)
 
-ct_one_one_one_var_ogs <- merge(one_one_one_og_var, params$ct_bim, by = "Orthogroup") %>%
+ct_one_one_one_var_ogs <- merge(one_one_one_og_var, ct_bim, by = "Orthogroup") %>%
   pull(Orthogroup)
 
 library(VennDiagram)
