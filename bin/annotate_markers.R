@@ -15,18 +15,18 @@ figure_dir = glue::glue"analysis/{date}_OG_SNPs_test/figures"
 
 
 # Load Bim data , Note change based on where the files are
-elegans_bim <- read.csv('~/Desktop/Erik/Caeno_Scan/test_data/c_elegans/ce.comp.map/ce.comp.map_0.05.bim', sep='\t', header = FALSE, col.names = c("chrom", "SNP", "CM", "BP", "A1", "A2"))
-briggsae_bim <-  read.csv('~/Desktop/Erik/Caeno_Scan/test_data/c_briggsae/cb.comp.map/cb.comp.map_0.05.bim', sep='\t', header = FALSE, col.names = c("chrom", "SNP", "CM", "BP", "A1", "A2"))
-tropicalis_bim <- read.csv('~/Desktop/Erik/Caeno_Scan/test_data/c_tropicalis/ct.comp.map/ct.comp.map_0.05.bim', sep='\t', header = FALSE, col.names = c("chrom", "SNP", "CM", "BP", "A1", "A2"))
+elegans_bim <- read.csv('test_data/c_elegans/ce.comp.map/ce.comp.map_0.05.bim', sep='\t', header = FALSE, col.names = c("chrom", "SNP", "CM", "BP", "A1", "A2"))
+briggsae_bim <-  read.csv('test_data/c_briggsae/cb.comp.map/cb.comp.map_0.05.bim', sep='\t', header = FALSE, col.names = c("chrom", "SNP", "CM", "BP", "A1", "A2"))
+tropicalis_bim <- read.csv('test_data/c_tropicalis/ct.comp.map/ct.comp.map_0.05.bim', sep='\t', header = FALSE, col.names = c("chrom", "SNP", "CM", "BP", "A1", "A2"))
 
 # Load GFF data, Note change based on where the files are
-elegans_gff <- read.csv('~/Desktop/Erik/Caeno_Scan/test_data/c_elegans/genomes/PRJNA13758/WS283/csq/PRJNA13758.WS283.csq.chrI.gff3', sep='\t')
+elegans_gff <- read.csv('test_data/c_elegans/genomes/PRJNA13758/WS283/csq/PRJNA13758.WS283.csq.chrI.gff3', sep='\t')
 elegans_gff_filtered <- filter(elegans_gff, type == 'mRNA') # filtered for just mRNA
 
-briggsae_gff <- read.csv('~/Desktop/Erik/Caeno_Scan/test_data/c_briggsae/genomes/QX1410_nanopore/Feb2020/csq/QX1410_nanopore.Feb2020.csq.chrI.gff3', sep='\t')
+briggsae_gff <- read.csv('test_data/c_briggsae/genomes/QX1410_nanopore/Feb2020/csq/QX1410_nanopore.Feb2020.csq.chrI.gff3', sep='\t')
 briggsae_gff_filtered <- filter(briggsae_gff, type == 'mRNA') # filtered for just mRNA
 
-tropicalis_gff <- read.csv('~/Desktop/Erik/Caeno_Scan/test_data/c_tropicalis/genomes/NIC58_nanopore/June2021/csq/NIC58_nanopore.June2021.csq.chrI.gff3', sep='\t')
+tropicalis_gff <- read.csv('test_data/c_tropicalis/genomes/NIC58_nanopore/June2021/csq/NIC58_nanopore.June2021.csq.chrI.gff3', sep='\t')
 tropicalis_gff_filtered <- filter(tropicalis_gff, type == 'mRNA') # filtered for just mRNA
 
 # Creating function to annotate the snps 
@@ -70,9 +70,9 @@ annotated_tropicalis <- annotateSNPs(tropicalis_bim, tropicalis_gff_filtered, 10
 
 # Read in average allele frequency data
 
-AF_ce <- read.table('~/Desktop/Erik/Caeno_Scan/test_data/c_elegans/ce.comp.map/ce.comp.map_0.05.chr1.frq', header = TRUE)
-AF_cb <- read.table('~/Desktop/Erik/Caeno_Scan/test_data/c_briggsae/cb.comp.map/cb.comp.map_0.05.chr1.frq', header = TRUE)
-AF_ct <- read.table('~/Desktop/Erik/Caeno_Scan/test_data/c_tropicalis/ct.comp.map/ct.comp.map_0.05.chr1.frq', header = TRUE)
+AF_ce <- read.table('test_data/c_elegans/ce.comp.map/ce.comp.map_0.05.chr1.frq', header = TRUE)
+AF_cb <- read.table('test_data/c_briggsae/cb.comp.map/cb.comp.map_0.05.chr1.frq', header = TRUE)
+AF_ct <- read.table('test_data/c_tropicalis/ct.comp.map/ct.comp.map_0.05.chr1.frq', header = TRUE)
 
 
 # create function to add MAFs
