@@ -6,34 +6,35 @@ library(readr)
 library(ggplot2)
 library(data.table)
 library(optparse)
+library(VennDiagram)
 
 #get date and time format as a variable YYYYMMDD_HHMM
 date <- format(Sys.time(), "%Y%m%d_%H%M")
 
-# Set up command line arguments
-# Set up command line arguments
-# option_list = list(
-#   make_option(c("-e", "--ce_bim"),  type="character"),
-#   make_option(c("-b", "--cb_bim"),  type="character"),
-#   make_option(c("-t", "--ct_bim"),  type="character"),
-#   make_option(c("-o", "--out_dir"),  type="character")
-# )
 
-# # Parse the arguments
-# opt_parser = OptionParser(option_list=option_list, add_help_option=FALSE)
-# params = parse_args(opt_parser)
-
-
-# Set up test data
-
-out_dir = glue::glue("analysis/{date}_test_Orthogroups")
-
-params <- list(
-  ce_bim = "analysis/20240213_0631_OG_SNPs_test/proc_data/20240213_0631.filtered_all_elegans.tsv",
-  cb_bim = "analysis/20240213_0631_OG_SNPs_test/proc_data/20240213_0631.filtered_all_briggsae.tsv",
-  ct_bim = "analysis/20240213_0631_OG_SNPs_test/proc_data/20240213_0631.filtered_all_tropicalis.tsv",
-  out_dir = out_dir
+#Set up command line arguments
+option_list = list(
+  make_option(c("-e", "--ce_bim"),  type="character"),
+  make_option(c("-b", "--cb_bim"),  type="character"),
+  make_option(c("-t", "--ct_bim"),  type="character"),
+  make_option(c("-o", "--out_dir"),  type="character")
 )
+
+# Parse the arguments
+opt_parser = OptionParser(option_list=option_list, add_help_option=FALSE)
+params = parse_args(opt_parser)
+
+
+# # Set up test data
+
+# out_dir = glue::glue("analysis/{date}_test_Orthogroups")
+
+# params <- list(
+#   ce_bim = "analysis/20240213_0631_OG_SNPs_test/proc_data/20240213_0631.filtered_all_elegans.tsv",
+#   cb_bim = "analysis/20240213_0631_OG_SNPs_test/proc_data/20240213_0631.filtered_all_briggsae.tsv",
+#   ct_bim = "analysis/20240213_0631_OG_SNPs_test/proc_data/20240213_0631.filtered_all_tropicalis.tsv",
+#   out_dir = out_dir
+# )
 
 ### Uses annotated bim files from annotate_markers.R script ######
 
@@ -131,11 +132,10 @@ cb_one_one_one_var_ogs <- merge(one_one_one_og_var, cb_bim, by = "Orthogroup") %
 ct_one_one_one_var_ogs <- merge(one_one_one_og_var, ct_bim, by = "Orthogroup") %>%
   pull(Orthogroup)
 
-library(VennDiagram)
 venn.diagram(
   x = list(ce_one_one_one_var_ogs, cb_one_one_one_var_ogs, ct_one_one_one_var_ogs),
   category.names = c("C. elegans" , "C. briggsae " , "C. tropicalis"),
-  filename = glue::glue('{figure_dir}/{date}_overlap_1_1_1_var_ogs.png'),
+  filename = glue::glue("{figure_dir}/{date}_overlap_1_1_1_var_ogs.png"),
   output=TRUE,
   imagetype="png"
 )
