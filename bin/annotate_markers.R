@@ -13,21 +13,20 @@ date <- format(Sys.time(), "%Y%m%d_%H%M")
 
 figure_dir = glue::glue("analysis/{date}_OG_SNPs_test/figures")
 
-# set up command line arguments
+# Set up command line arguments
 option_list = list(
   make_option(c("-e", "--elegans_bim"),  type="character"),
   make_option(c("-b", "--briggsae_bim"),  type="character"),
   make_option(c("-t", "--tropicalis_bim"),  type="character"),
-  make_option(c("-ge", "--elegans_gff"),  type="character"),
-  make_option(c("-gb", "--briggsae_gff"), type="character"),
-  make_option(c("-gt", "--tropicalis_gff"), type="character"),
-  make_option(c("-ae", "--elegans_freq"), type="character"),
-  make_option(c("-ab", "--briggsae_freq"), type="character"),
-  make_option(c("-at", "--tropicalis_freq"), type="character"),
-  make_option(c("-og", "--orthogroups"), type="character"),
-  make_option(c("-o", "--output"), type="character")
+  make_option(c("-E", "--elegans_gff"),  type="character"),
+  make_option(c("-B", "--briggsae_gff"), type="character"),
+  make_option(c("-T", "--tropicalis_gff"), type="character"),
+  make_option(c("-f", "--elegans_freq"), type="character"),
+  make_option(c("-g", "--briggsae_freq"), type="character"),
+  make_option(c("-h", "--tropicalis_freq"), type="character"),
+  make_option(c("-o", "--orthogroups"), type="character"),
+  make_option(c("-O", "--output"), type="character")
 )
-
 
 # Parse the arguments
 opt_parser = OptionParser(option_list=option_list)
