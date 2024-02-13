@@ -11,7 +11,27 @@ library(optparse)
 #get date and time format as a variable YYYYMMDD_HHMM
 date <- format(Sys.time(), "%Y%m%d_%H%M")
 
-figure_dir = glue::glue("analysis/{date}_OG_SNPs_test/figures")
+# Create the data folder in the analysis folder
+out_dir = glue::glue("analysis/{date}_OG_SNPs_test")
+
+# check if the directory exists, if not create it
+if (!dir.exists(out_dir)) {
+  dir.create(out_dir)
+}
+
+## Create sub directories for figures and processed data
+
+figure_dir = glue::glue("{out_dir}/figures")
+proc_dir = glue::glue("{out_dir}/proc_data")
+
+# Check if the directory exists, if not create it
+if (!dir.exists(figure_dir)) {
+  dir.create(figure_dir)
+}
+
+if (!dir.exists(proc_dir)) {
+  dir.create(proc_dir)
+}
 
 # Set up command line arguments
 option_list = list(
@@ -151,6 +171,11 @@ all_tropicalis <- add_MAFs(OG_tropicalis, AF_ct)
 filtered_all_elegans <- all_elegans %>% filter(!is.na(Gene_ID))
 filtered_all_briggsae <- all_briggsae %>% filter(!is.na(Gene_ID))
 filtered_all_tropicalis <- all_tropicalis %>% filter(!is.na(Gene_ID))
+
+# Save the data for later use
+data.table::fwrite(filtered_all_elegans, glue::glue("{proc_dir}/{date}.filtered_all_elegans.tsv"))
+data.table::fwrite(filtered_all_briggsae, glue::glue("{proc_dir}/{date}.filtered_all_briggsae.tsv"))
+data.table::fwrite(filtered_all_tropicalis, glue::glue("{proc_dir}/{date}.filtered_all_tropicalis.tsv"))
 
 # Count the occurrences of each Gene_ID
 count_genes <- function(df) {
