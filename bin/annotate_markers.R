@@ -74,7 +74,7 @@ bim$chrom <- as.character(as.roman(bim$chrom))
 
 # Create GRanges objects for SNPs and mRNA
 snp_gr <- GRanges(seqnames = bim$chrom, ranges = IRanges(start = bim$BP - buffer, end = bim$BP + buffer))
-mRNA_gr <- GRanges(seqnames = unique(gff$chrom), ranges = IRanges(start = gff$start - buffer, end = gff$end + buffer),
+mRNA_gr <- GRanges(seqnames = gff$chrom, ranges = IRanges(start = gff$start - buffer, end = gff$end + buffer),
                    gene_id = gsub(".*transcript_id \"([^\"]+)\".*", "\\1", gff$attribute))
 
 # Find overlapping SNPs and mRNA features
