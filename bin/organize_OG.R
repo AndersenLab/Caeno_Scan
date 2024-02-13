@@ -29,9 +29,9 @@ date <- format(Sys.time(), "%Y%m%d_%H%M")
 out_dir = glue::glue("analysis/{date}_test_Orthogroups")
 
 params <- list(
-  ce_bim = "analysis/20240213_0541_OG_SNPs_test/proc_data/20240213_0541.filtered_all_elegans.tsv",
-  cb_bim = "analysis/20240213_0541_OG_SNPs_test/proc_data/20240213_0541.filtered_all_briggsae.tsv",
-  ct_bim = "analysis/20240213_0541_OG_SNPs_test/proc_data/20240213_0541.filtered_all_tropicalis.tsv",
+  ce_bim = "analysis/20240213_0631_OG_SNPs_test/proc_data/20240213_0631.filtered_all_elegans.tsv",
+  cb_bim = "analysis/20240213_0631_OG_SNPs_test/proc_data/20240213_0631.filtered_all_briggsae.tsv",
+  ct_bim = "analysis/20240213_0631_OG_SNPs_test/proc_data/20240213_0631.filtered_all_tropicalis.tsv",
   out_dir = out_dir
 )
 
