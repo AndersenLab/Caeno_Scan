@@ -104,11 +104,11 @@ add_MAFs <- function(abim, allele_df) {
 }
 
 # test function with elegans
-all_elegans <- add_MAFs(OG_elegans, AF_ce)
+all_elegans <- add_MAFs(annotated_elegans, AF_ce)
 # test function with briggsae
-all_briggsae <- add_MAFs(OG_briggsae, AF_cb)
+all_briggsae <- add_MAFs(annotated_briggsae, AF_cb)
 # test function with tropicalis
-all_tropicalis <- add_MAFs(OG_tropicalis, AF_ct)
+all_tropicalis <- add_MAFs(annotated_tropicalis, AF_ct)
 
 # Filter out NA values so just the GeneIDs
 
