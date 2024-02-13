@@ -173,9 +173,9 @@ filtered_all_briggsae <- all_briggsae %>% filter(!is.na(Gene_ID))
 filtered_all_tropicalis <- all_tropicalis %>% filter(!is.na(Gene_ID))
 
 # Save the data for later use
-data.table::fwrite(filtered_all_elegans, glue::glue("{proc_dir}/{date}.filtered_all_elegans.tsv"))
-data.table::fwrite(filtered_all_briggsae, glue::glue("{proc_dir}/{date}.filtered_all_briggsae.tsv"))
-data.table::fwrite(filtered_all_tropicalis, glue::glue("{proc_dir}/{date}.filtered_all_tropicalis.tsv"))
+data.table::fwrite(filtered_all_elegans, glue::glue("{proc_dir}/{date}.filtered_all_elegans.tsv"), sep = "\t")
+data.table::fwrite(filtered_all_briggsae, glue::glue("{proc_dir}/{date}.filtered_all_briggsae.tsv"), sep = "\t")
+data.table::fwrite(filtered_all_tropicalis, glue::glue("{proc_dir}/{date}.filtered_all_tropicalis.tsv"), sep = "\t")
 
 # Count the occurrences of each Gene_ID
 count_genes <- function(df) {
