@@ -103,12 +103,48 @@ add_MAFs <- function(abim, allele_df) {
   return(merged_data)
 }
 
+#Read in orthogroups
+OG <- readr::read_tsv('input_data/all_species/orthogroups/20240206_Orthogroups/masterOrthoDB.tsv') 
+colnames(OG) <- c("Orthogroup", "Briggsae", "Tropicalis", "Elegans")
+cpOG <- OG
+OG = unite(OG, Gene_ID, c("Briggsae", "Tropicalis", "Elegans"), sep = " ") %>% 
+  separate_rows(Gene_ID, sep = ",") %>% 
+  separate_rows(Gene_ID, sep = " ")
+OG$Gene_ID <- sub("Transcript_", "", OG$Gene_ID)
+OG$Gene_ID <- sub("transcript_", "", OG$Gene_ID) 
+
+
+# function to add OGs 
+add_OG <- function(abim, ortho) {
+
+# Join the two tables based on 'Gene_ID'
+merged_data <- left_join(abim, ortho, by = "Gene_ID")
+
+# Group by 'Gene_ID' and make 'OG_list' as a list of unique OG values
+result <- merged_data %>%
+  group_by(Gene_ID) %>%
+  summarize(OG_list = list(unique(Orthogroup, na.rm = TRUE)))
+
+# Merge the summarized result back to the original 
+final_data <- left_join(abim, result, by = "Gene_ID")
+
+return(merged_data)
+
+}
+
 # test function with elegans
-all_elegans <- add_MAFs(annotated_elegans, AF_ce)
+OG_elegans <- add_OG(annotated_elegans, OG)
 # test function with briggsae
-all_briggsae <- add_MAFs(annotated_briggsae, AF_cb)
+OG_briggsae <- add_OG(annotated_briggsae, OG)
 # test function with tropicalis
-all_tropicalis <- add_MAFs(annotated_tropicalis, AF_ct)
+OG_tropicalis <- add_OG(annotated_tropicalis, OG)
+
+# test function with elegans
+all_elegans <- add_MAFs(OG_elegans, AF_ce)
+# test function with briggsae
+all_briggsae <- add_MAFs(OG_briggsae, AF_cb)
+# test function with tropicalis
+all_tropicalis <- add_MAFs(OG_tropicalis, AF_ct)
 
 # Filter out NA values so just the GeneIDs
 
