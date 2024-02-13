@@ -57,13 +57,13 @@ briggsae_bim <-  read.csv(params$briggsae_bim, sep='\t', header = FALSE, col.nam
 tropicalis_bim <- read.csv(params$tropicalis_bim, sep='\t', header = FALSE, col.names = c("chrom", "SNP", "CM", "BP", "A1", "A2"))
 
 # Load GFF data, Note change based on where the files are
-elegans_gff <- read.csv(params$elegans_gff, sep='\t')
+elegans_gff <- read.csv(params$elegans_gff, sep='\t', header = FALSE, col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "attributes"))
 elegans_gff_filtered <- filter(elegans_gff, type == 'mRNA') # filtered for just mRNA
 
-briggsae_gff <- read.csv(params$briggsae_gff, sep='\t')
+briggsae_gff <- read.csv(params$briggsae_gff, sep='\t', header = FALSE, col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "attributes"))
 briggsae_gff_filtered <- filter(briggsae_gff, type == 'mRNA') # filtered for just mRNA
 
-tropicalis_gff <- read.csv(params$tropicalis_gff, sep='\t')
+tropicalis_gff <- read.csv(params$tropicalis_gff, sep='\t', header = FALSE, col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "attributes"))
 tropicalis_gff_filtered <- filter(tropicalis_gff, type == 'mRNA') # filtered for just mRNA
 
 # Creating function to annotate the snps 
