@@ -7,19 +7,33 @@ library(ggplot2)
 library(data.table)
 library(optparse)
 
+#get date and time format as a variable YYYYMMDD_HHMM
+date <- format(Sys.time(), "%Y%m%d_%H%M")
 
 # Set up command line arguments
 # Set up command line arguments
-option_list = list(
-  make_option(c("-e", "--ce_bim"),  type="character"),
-  make_option(c("-b", "--cb_bim"),  type="character"),
-  make_option(c("-t", "--ct_bim"),  type="character"),
-  make_option(c("-o", "--out_dir"),  type="character")
+# option_list = list(
+#   make_option(c("-e", "--ce_bim"),  type="character"),
+#   make_option(c("-b", "--cb_bim"),  type="character"),
+#   make_option(c("-t", "--ct_bim"),  type="character"),
+#   make_option(c("-o", "--out_dir"),  type="character")
+# )
+
+# # Parse the arguments
+# opt_parser = OptionParser(option_list=option_list, add_help_option=FALSE)
+# params = parse_args(opt_parser)
+
+
+# Set up test data
+
+out_dir = glue::glue("analysis/{date}_test_Orthogroups")
+
+params <- list(
+  ce_bim = "analysis/20240213_0541_OG_SNPs_test/proc_data/20240213_0541.filtered_all_elegans.tsv",
+  cb_bim = "analysis/20240213_0541_OG_SNPs_test/proc_data/20240213_0541.filtered_all_briggsae.tsv",
+  ct_bim = "analysis/20240213_0541_OG_SNPs_test/proc_data/20240213_0541.filtered_all_tropicalis.tsv",
+  out_dir = out_dir
 )
-
-# Parse the arguments
-opt_parser = OptionParser(option_list=option_list, add_help_option=FALSE)
-params = parse_args(opt_parser)
 
 ### Uses annotated bim files from annotate_markers.R script ######
 
@@ -37,8 +51,6 @@ if (!dir.exists(figure_dir)) {
   dir.create(figure_dir)
 }
 
-#get date and time format as a variable YYYYMMDD_HHMM
-date <- format(Sys.time(), "%Y%m%d_%H%M")
 
 #Read in orthogroups
 OG <- readr::read_tsv('input_data/all_species/orthogroups/20240206_Orthogroups/masterOrthoDB.tsv') 
