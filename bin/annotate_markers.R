@@ -23,13 +23,11 @@ option_list = list(
   make_option(c("-T", "--tropicalis_gff"), type="character"),
   make_option(c("-f", "--elegans_freq"), type="character"),
   make_option(c("-g", "--briggsae_freq"), type="character"),
-  make_option(c("-h", "--tropicalis_freq"), type="character"),
-  make_option(c("-o", "--orthogroups"), type="character"),
-  make_option(c("-O", "--output"), type="character")
+  make_option(c("-h", "--tropicalis_freq"), type="character")
 )
 
 # Parse the arguments
-opt_parser = OptionParser(option_list=option_list)
+opt_parser = OptionParser(option_list=option_list, add_help_option=FALSE)
 params = parse_args(opt_parser)
 
 
