@@ -102,6 +102,9 @@ elegans_gff_filtered <- data.table::fread(params$elegans_gff,
                                     #convert stop and end to integer
                                     mutate(start = as.integer(start), end = as.integer(end))
 
+# Check if any of the transcript ids are NA
+elegan_missing_id <- nrow(elegans_gff_filtered %>% filter(is.na(transcript_id)))
+
 
 briggsae_gff_filtered <- data.table::fread(params$briggsae_gff,
                                       sep='\t',
@@ -114,6 +117,7 @@ briggsae_gff_filtered <- data.table::fread(params$briggsae_gff,
                                     #convert stop and end to integer
                                     mutate(start = as.integer(start), end = as.integer(end))
                                 
+briggsae_missing_id <- nrow(briggsae_gff_filtered %>% filter(is.na(transcript_id)))
 
 tropicalis_gff_filtered <- data.table::fread(params$tropicalis_gff,
                                       sep='\t',
@@ -125,6 +129,8 @@ tropicalis_gff_filtered <- data.table::fread(params$tropicalis_gff,
                                     dplyr::mutate(transcript_id = get_name(attributes)) %>% 
                                     #convert stop and end to integer
                                     mutate(start = as.integer(start), end = as.integer(end))
+
+tropicalis_missing_id <- nrow(tropicalis_gff_filtered %>% filter(is.na(transcript_id)))
 
 # Creating function to annotate the snps 
 annotateSNPs <- function(bim, gff, buffer){
@@ -150,7 +156,7 @@ bim$attribute <- NA
     bim$attribute[subjectHits(overlaps)] <- mRNA_gr$gene_id[queryHits(overlaps)]
   }
 
-bim$Gene_ID <- sub(".*:(\\w+\\.\\w+\\.\\w+);.*", "\\1", bim[,8])
+#bim$Gene_ID <- sub(".*:(\\w+\\.\\w+\\.\\w+);.*", "\\1", bim[,8])
 
 return(bim)
 }
@@ -163,8 +169,18 @@ annotated_elegans <- annotateSNPs(elegans_bim, elegans_gff_filtered, 0)
 n_snps_elegans <- nrow(elegans_bim)
 n_snps_annotated_elegans <- nrow(annotated_elegans)
 n_snps_intragenic_elegans <- nrow(annotated_elegans %>% filter(Intragenic == TRUE))
+n_snps_attribute_id_elegans <- nrow(annotated_elegans %>% filter(!is.na(attribute)))
+n_snps_geneid_elegans <- nrow(annotated_elegans %>% filter(!is.na(Gene_ID)))
+
 print(
-  glue::glue("There were {n_snps_elegans} SNPs in the elegans data set, {n_snps_annotated_elegans} were annotated, and {n_snps_intragenic_elegans} were intragenic")
+  glue::glue("There were {n_snps_elegans} SNPs in the elegans data set, 
+  {n_snps_annotated_elegans} were annotated, 
+  {n_snps_intragenic_elegans} were intragenic,
+  and {n_snps_attribute_id_elegans} had an attribute id associated with them
+  and {n_snps_geneid_elegans} had a gene id associated with them
+  "
+
+  )
 )
 
 # check output for intragenic SNPs without gene id
