@@ -33,22 +33,37 @@ if (!dir.exists(proc_dir)) {
   dir.create(proc_dir)
 }
 
-# Set up command line arguments
-option_list = list(
-  make_option(c("-e", "--elegans_bim"),  type="character"),
-  make_option(c("-b", "--briggsae_bim"),  type="character"),
-  make_option(c("-t", "--tropicalis_bim"),  type="character"),
-  make_option(c("-E", "--elegans_gff"),  type="character"),
-  make_option(c("-B", "--briggsae_gff"), type="character"),
-  make_option(c("-T", "--tropicalis_gff"), type="character"),
-  make_option(c("-f", "--elegans_freq"), type="character"),
-  make_option(c("-g", "--briggsae_freq"), type="character"),
-  make_option(c("-h", "--tropicalis_freq"), type="character")
-)
+# # Set up command line arguments
+# option_list = list(
+#   make_option(c("-e", "--elegans_bim"),  type="character"),
+#   make_option(c("-b", "--briggsae_bim"),  type="character"),
+#   make_option(c("-t", "--tropicalis_bim"),  type="character"),
+#   make_option(c("-E", "--elegans_gff"),  type="character"),
+#   make_option(c("-B", "--briggsae_gff"), type="character"),
+#   make_option(c("-T", "--tropicalis_gff"), type="character"),
+#   make_option(c("-f", "--elegans_freq"), type="character"),
+#   make_option(c("-g", "--briggsae_freq"), type="character"),
+#   make_option(c("-h", "--tropicalis_freq"), type="character")
+# )
 
-# Parse the arguments
-opt_parser = OptionParser(option_list=option_list, add_help_option=FALSE)
-params = parse_args(opt_parser)
+# # Parse the arguments
+# opt_parser = OptionParser(option_list=option_list, add_help_option=FALSE)
+# params = parse_args(opt_parser)
+
+# Set up inputs for troubleshooting error with large data set
+params <- list(
+  elegans_bim = "input_data/all_species/elegans/elegans.bim",
+  briggsae_bim = "input_data/all_species/briggsae/briggsae.bim",
+  tropicalis_bim = "input_data/all_species/tropicalis/tropicalis.bim",
+  
+  elegans_gff = "/projects/b1059/data/c_elegans/genomes/PRJNA13758/WS283/csq/c_elegans.PRJNA13758.WS283.csq.gff3",
+  briggsae_gff = "/projects/b1059/data/c_briggsae/genomes/QX1410_nanopore/Feb2020/csq/c_briggsae.QX1410_nanopore.Feb2020.csq.gff3",
+  tropicalis_gff = "/projects/b1059/data/c_tropicalis/genomes/NIC58_nanopore/June2021/csq/c_tropicalis.NIC58_nanopore.June2021.csq.gff3",
+  
+  elegans_freq = "input_data/all_species/elegans/elegans.frq",
+  briggsae_freq = "input_data/all_species/briggsae/briggsae.frq",
+  tropicalis_freq = "input_data/all_species/tropicalis/tropicalis.frq"
+)
 
 
 # Load Bim data , Note change based on where the files are
