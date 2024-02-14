@@ -50,19 +50,20 @@ if (!dir.exists(proc_dir)) {
 # opt_parser = OptionParser(option_list=option_list, add_help_option=FALSE)
 # params = parse_args(opt_parser)
 
+
 # Set up inputs for troubleshooting error with large data set
 params <- list(
-  elegans_bim = "test_data/c_elegans/ce.comp.map/ce.comp.map_0.05.bim",
-  briggsae_bim = "test_data/c_briggsae/cb.comp.map/cb.comp.map_0.05.bim",
-  tropicalis_bim = "test_data/c_tropicalis/ct.comp.map/ct.comp.map_0.05.bim",
+  elegans_bim = "/projects/b1059/projects/Ryan/ortholog_sims/Caeno_Scan/20240212_fullpopulation_simfiles_noLD_0.00/c_elegans/ce_fullpop/ce_fullpop_0.00.bim",
+  briggsae_bim = "/projects/b1059/projects/Ryan/ortholog_sims/Caeno_Scan/20240212_fullpopulation_simfiles_noLD_0.00/c_briggsae/cb_fullpop/cb_fullpop_0.00.bim",
+  tropicalis_bim = "/projects/b1059/projects/Ryan/ortholog_sims/Caeno_Scan/20240212_fullpopulation_simfiles_noLD_0.00/c_tropicalis/ct_fullpop/ct_fullpop_0.00.bim",
   
   elegans_gff = "/projects/b1059/data/c_elegans/genomes/PRJNA13758/WS283/csq/c_elegans.PRJNA13758.WS283.csq.gff3",
   briggsae_gff = "/projects/b1059/data/c_briggsae/genomes/QX1410_nanopore/Feb2020/csq/c_briggsae.QX1410_nanopore.Feb2020.csq.gff3",
   tropicalis_gff = "/projects/b1059/data/c_tropicalis/genomes/NIC58_nanopore/June2021/csq/c_tropicalis.NIC58_nanopore.June2021.csq.gff3",
   
-  elegans_freq = "test_data/c_elegans/ce.comp.map/ce.comp.map_0.05.chr1.frq",
-  briggsae_freq = "test_data/c_briggsae/cb.comp.map/cb.comp.map_0.05.chr1.frq",
-  tropicalis_freq = "test_data/c_tropicalis/ct.comp.map/ct.comp.map_0.05.chr1.frq"
+  elegans_freq = "/projects/b1059/projects/Ryan/ortholog_sims/Caeno_Scan/20240212_fullpopulation_simfiles_noLD_0.00/c_elegans/ce_fullpop/ce_fullpop_0.00.frq",
+  briggsae_freq = "/projects/b1059/projects/Ryan/ortholog_sims/Caeno_Scan/20240212_fullpopulation_simfiles_noLD_0.00/c_briggsae/cb_fullpop/cb_fullpop_0.00.frq",
+  tropicalis_freq = "/projects/b1059/projects/Ryan/ortholog_sims/Caeno_Scan/20240212_fullpopulation_simfiles_noLD_0.00/c_tropicalis/ct_fullpop/ct_fullpop_0.00.frq"
 )
 
 
@@ -134,6 +135,13 @@ print(
   glue::glue("There were {n_snps_elegans} SNPs in the elegans data set, {n_snps_annotated_elegans} were annotated, and {n_snps_intragenic_elegans} were intragenic")
 )
 
+# check output for intragenic SNPs without gene id
+intragenic_no_gene_id <- annotated_elegans %>% filter(Intragenic == TRUE, is.na(attribute))
+print(
+  glue::glue("There were {nrow(intragenic_no_gene_id)} intragenic SNPs without a gene id")
+)
+
+
 # Test function with briggsae
 annotated_briggsae <- annotateSNPs(briggsae_bim, briggsae_gff_filtered, 0)
 
@@ -162,6 +170,14 @@ AF_ce <- read.table(params$elegans_freq, header = TRUE)
 AF_cb <- read.table(params$briggsae_freq, header = TRUE)
 AF_ct <- read.table(params$tropicalis_freq, header = TRUE)
 
+# check nrow read in for each species
+n_af_ce <- nrow(AF_ce)
+n_af_cb <- nrow(AF_cb)
+n_af_ct <- nrow(AF_ct)
+
+print(
+  glue::glue("There were {n_af_ce} SNPs in the elegans allele frequency data set, {n_af_cb} in the briggsae allele frequency data set, and {n_af_ct} in the tropicalis allele frequency data set")
+)
 
 # create function to add MAFs
 add_MAFs <- function(abim, allele_df) {
@@ -205,17 +221,78 @@ return(merged_data)
 
 # test function with elegans
 OG_elegans <- add_OG(annotated_elegans, OG)
+
+# check the output
+n_snps_elegans <- nrow(annotated_elegans)
+n_snps_annotated_elegans <- nrow(OG_elegans)
+n_snps_intragenic_elegans <- nrow(OG_elegans %>% filter(Intragenic == TRUE))
+
+print(
+  glue::glue("There were {n_snps_elegans} SNPs in the OG elegans dataframe, {n_snps_annotated_elegans} were annotated with the OG and stored in the OG elegans dataframe,
+  and {n_snps_intragenic_elegans} were intragenic")
+)
+
 # test function with briggsae
 OG_briggsae <- add_OG(annotated_briggsae, OG)
+
+# check the output
+n_snps_briggsae <- nrow(annotated_briggsae)
+n_snps_annotated_briggsae <- nrow(OG_briggsae)
+n_snps_intragenic_briggsae <- nrow(OG_briggsae %>% filter(Intragenic == TRUE))
+
+print(
+  glue::glue("There were {n_snps_briggsae} SNPs in the OG briggsae dataframe, {n_snps_annotated_briggsae} were annotated with the OG and stored in the OG briggsae dataframe,
+  and {n_snps_intragenic_briggsae} were intragenic")
+)
+
 # test function with tropicalis
 OG_tropicalis <- add_OG(annotated_tropicalis, OG)
 
+# check the output
+n_snps_tropicalis <- nrow(annotated_tropicalis)
+n_snps_annotated_tropicalis <- nrow(OG_tropicalis)
+n_snps_intragenic_tropicalis <- nrow(OG_tropicalis %>% filter(Intragenic == TRUE))
+
+print(
+  glue::glue("There were {n_snps_tropicalis} SNPs in the OG tropicalis dataframe, {n_snps_annotated_tropicalis} were annotated with the OG and stored in the OG tropicalis dataframe,
+  and {n_snps_intragenic_tropicalis} were intragenic")
+)
 # test function with elegans
 all_elegans <- add_MAFs(OG_elegans, AF_ce)
+
+#check the output
+n_snps_elegans <- nrow(OG_elegans)
+n_snps_annotated_elegans <- nrow(all_elegans)
+n_snps_intragenic_elegans <- nrow(all_elegans %>% filter(Intragenic == TRUE))
+print(
+  glue::glue("There were {n_snps_elegans} SNPs in the OG elegans dataframe, {n_snps_annotated_elegans} were annotated with the MAF and stored in the all elegans dataframe,
+  and {n_snps_intragenic_elegans} were intragenic")
+)
+
 # test function with briggsae
 all_briggsae <- add_MAFs(OG_briggsae, AF_cb)
+
+#check the output
+n_snps_briggsae <- nrow(OG_briggsae)
+n_snps_annotated_briggsae <- nrow(all_briggsae)
+n_snps_intragenic_briggsae <- nrow(all_briggsae %>% filter(Intragenic == TRUE))
+print(
+  glue::glue("There were {n_snps_briggsae} SNPs in the OG briggsae dataframe, {n_snps_annotated_briggsae} were annotated with the MAF and stored in the all briggsae dataframe,
+  and {n_snps_intragenic_briggsae} were intragenic")
+)
+
 # test function with tropicalis
 all_tropicalis <- add_MAFs(OG_tropicalis, AF_ct)
+
+#check the output
+n_snps_tropicalis <- nrow(OG_tropicalis)
+n_snps_annotated_tropicalis <- nrow(all_tropicalis)
+n_snps_intragenic_tropicalis <- nrow(all_tropicalis %>% filter(Intragenic == TRUE))
+
+print(
+  glue::glue("There were {n_snps_tropicalis} SNPs in the OG tropicalis dataframe, {n_snps_annotated_tropicalis} were annotated with the MAF and stored in the all tropicalis dataframe,
+  and {n_snps_intragenic_tropicalis} were intragenic")
+)
 
 # Filter out NA values so just the GeneIDs
 
