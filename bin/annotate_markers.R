@@ -126,11 +126,35 @@ return(bim)
 # Test annotate function with elegans
 annotated_elegans <- annotateSNPs(elegans_bim, elegans_gff_filtered, 0)
 
+#check the output
+n_snps_elegans <- nrow(elegans_bim)
+n_snps_annotated_elegans <- nrow(annotated_elegans)
+n_snps_intragenic_elegans <- nrow(annotated_elegans %>% filter(Intragenic == TRUE))
+print(
+  glue::glue("There were {n_snps_elegans} SNPs in the elegans data set, {n_snps_annotated_elegans} were annotated, and {n_snps_intragenic_elegans} were intragenic")
+)
+
 # Test function with briggsae
 annotated_briggsae <- annotateSNPs(briggsae_bim, briggsae_gff_filtered, 0)
 
+#check the output
+n_snps_briggsae <- nrow(briggsae_bim)
+n_snps_annotated_briggsae <- nrow(annotated_briggsae)
+n_snps_intragenic_briggsae <- nrow(annotated_briggsae %>% filter(Intragenic == TRUE))
+print(
+  glue::glue("There were {n_snps_briggsae} SNPs in the briggsae data set, {n_snps_annotated_briggsae} were annotated, and {n_snps_intragenic_briggsae} were intragenic")
+)
+
 # Test function with tropicalis
 annotated_tropicalis <- annotateSNPs(tropicalis_bim, tropicalis_gff_filtered, 0)
+
+#check the output
+n_snps_tropicalis <- nrow(tropicalis_bim)
+n_snps_annotated_tropicalis <- nrow(annotated_tropicalis)
+n_snps_intragenic_tropicalis <- nrow(annotated_tropicalis %>% filter(Intragenic == TRUE))
+print(
+  glue::glue("There were {n_snps_tropicalis} SNPs in the tropicalis data set, {n_snps_annotated_tropicalis} were annotated, and {n_snps_intragenic_tropicalis} were intragenic")
+)
 
 # Read in average allele frequency data
 
