@@ -52,18 +52,19 @@ if (!dir.exists(proc_dir)) {
 
 
 # Set up inputs for troubleshooting error with large data set
+# Set up inputs for troubleshooting error with large data set
 params <- list(
-  elegans_bim = "/projects/b1059/projects/Ryan/ortholog_sims/Caeno_Scan/20240212_fullpopulation_simfiles_noLD_0.00/c_elegans/ce_fullpop/ce_fullpop_0.00.bim",
-  briggsae_bim = "/projects/b1059/projects/Ryan/ortholog_sims/Caeno_Scan/20240212_fullpopulation_simfiles_noLD_0.00/c_briggsae/cb_fullpop/cb_fullpop_0.00.bim",
-  tropicalis_bim = "/projects/b1059/projects/Ryan/ortholog_sims/Caeno_Scan/20240212_fullpopulation_simfiles_noLD_0.00/c_tropicalis/ct_fullpop/ct_fullpop_0.00.bim",
+  elegans_bim = "test_data/c_elegans/ce.comp.map/ce.comp.map_0.05.bim",
+  briggsae_bim = "test_data/c_briggsae/cb.comp.map/cb.comp.map_0.05.bim",
+  tropicalis_bim = "test_data/c_tropicalis/ct.comp.map/ct.comp.map_0.05.bim",
   
-  elegans_gff = "/projects/b1059/data/c_elegans/genomes/PRJNA13758/WS283/csq/c_elegans.PRJNA13758.WS283.csq.gff3",
-  briggsae_gff = "/projects/b1059/data/c_briggsae/genomes/QX1410_nanopore/Feb2020/csq/c_briggsae.QX1410_nanopore.Feb2020.csq.gff3",
-  tropicalis_gff = "/projects/b1059/data/c_tropicalis/genomes/NIC58_nanopore/June2021/csq/c_tropicalis.NIC58_nanopore.June2021.csq.gff3",
+  elegans_gff = "test_data/c_elegans/genomes/PRJNA13758/WS283/csq/PRJNA13758.WS283.csq.chrI.gff3",
+  briggsae_gff = "test_data/c_briggsae/genomes/QX1410_nanopore/Feb2020/csq/QX1410_nanopore.Feb2020.csq.chrI.gff3",
+  tropicalis_gff = "test_data/c_tropicalis/genomes/NIC58_nanopore/June2021/csq/NIC58_nanopore.June2021.csq.chrI.gff3",
   
-  elegans_freq = "/projects/b1059/projects/Ryan/ortholog_sims/Caeno_Scan/20240212_fullpopulation_simfiles_noLD_0.00/c_elegans/ce_fullpop/ce_fullpop_0.00.frq",
-  briggsae_freq = "/projects/b1059/projects/Ryan/ortholog_sims/Caeno_Scan/20240212_fullpopulation_simfiles_noLD_0.00/c_briggsae/cb_fullpop/cb_fullpop_0.00.frq",
-  tropicalis_freq = "/projects/b1059/projects/Ryan/ortholog_sims/Caeno_Scan/20240212_fullpopulation_simfiles_noLD_0.00/c_tropicalis/ct_fullpop/ct_fullpop_0.00.frq"
+  elegans_freq = "test_data/c_elegans/ce.comp.map/ce.comp.map_0.05.chr1.frq",
+  briggsae_freq = "test_data/c_briggsae/cb.comp.map/cb.comp.map_0.05.chr1.frq",
+  tropicalis_freq = "test_data/c_tropicalis/ct.comp.map/ct.comp.map_0.05.chr1.frq"
 )
 
 
@@ -73,26 +74,46 @@ briggsae_bim <-  read.csv(params$briggsae_bim, sep='\t', header = FALSE, col.nam
 tropicalis_bim <- read.csv(params$tropicalis_bim, sep='\t', header = FALSE, col.names = c("chrom", "SNP", "CM", "BP", "A1", "A2"))
 
 # Load GFF data, Note change based on where the files are
+
+## Testing transcript ID parsing from attributes column
+# test_attributes_string <- "ID=transcript:Y74C9A.3.1;Parent=gene:WBGene00022277;Name=Y74C9A.3.1;wormpep=CE28146;locus=homt-1;uniprot_id=Q9N4D9;biotype=protein_coding"
+
+# #extract everything before the first semicolon
+# id <- sub(";.*", "", test_attributes_string)
+
+# #pull out the transcript id from the id string
+# transcript_id <- sub(".*:", "", id)
+
+#create a function that can be applied to the attributes column
+get_name <- function(x) {
+  id <- sub(";.*", "", x)
+  transcript_id <- sub(".*:", "", id)
+  return(transcript_id)
+}
+
 elegans_gff_filtered <- read.csv(
   params$elegans_gff,
   sep='\t', header = FALSE, 
   col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "attributes")
   )  %>% 
-  dplyr::filter(type == 'mRNA')
+  dplyr::filter(type == 'mRNA') %>% 
+  dplyr::mutate(transcript_id = get_name(attributes))
 
 briggsae_gff_filtered <- read.csv(
   params$briggsae_gff,
   sep='\t', header = FALSE, 
   col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "attributes")
   )  %>% 
-  dplyr::filter(type == 'mRNA')
+  dplyr::filter(type == 'mRNA') %>% 
+  dplyr::mutate(transcript_id = get_name(attributes))
 
 tropicalis_gff_filtered <- read.csv(
   params$tropicalis_gff,
   sep='\t', header = FALSE, 
   col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "attributes")
   )  %>% 
-  dplyr::filter(type == 'mRNA')
+  dplyr::filter(type == 'mRNA') %>% 
+  dplyr::mutate(transcript_id = get_name(attributes))
 
 # Creating function to annotate the snps 
 annotateSNPs <- function(bim, gff, buffer){
@@ -103,7 +124,7 @@ bim$chrom <- as.character(as.roman(bim$chrom))
 # Create GRanges objects for SNPs and mRNA
 snp_gr <- GRanges(seqnames = bim$chrom, ranges = IRanges(start = bim$BP - buffer, end = bim$BP + buffer))
 mRNA_gr <- GRanges(seqnames = gff$chrom, ranges = IRanges(start = gff$start - buffer, end = gff$end + buffer),
-                   gene_id = gsub(".*transcript_id \"([^\"]+)\".*", "\\1", gff$attribute))
+                   gene_id =gff$transcript_id))
 
 # Find overlapping SNPs and mRNA features
 overlaps <- findOverlaps(snp_gr, mRNA_gr)
