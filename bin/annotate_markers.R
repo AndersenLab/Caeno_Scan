@@ -52,17 +52,17 @@ if (!dir.exists(proc_dir)) {
 
 # Set up inputs for troubleshooting error with large data set
 params <- list(
-  elegans_bim = "input_data/all_species/elegans/elegans.bim",
-  briggsae_bim = "input_data/all_species/briggsae/briggsae.bim",
-  tropicalis_bim = "input_data/all_species/tropicalis/tropicalis.bim",
+  elegans_bim = "test_data/c_elegans/ce.comp.map/ce.comp.map_0.05.bim",
+  briggsae_bim = "test_data/c_briggsae/cb.comp.map/cb.comp.map_0.05.bim",
+  tropicalis_bim = "test_data/c_tropicalis/ct.comp.map/ct.comp.map_0.05.bim",
   
   elegans_gff = "/projects/b1059/data/c_elegans/genomes/PRJNA13758/WS283/csq/c_elegans.PRJNA13758.WS283.csq.gff3",
   briggsae_gff = "/projects/b1059/data/c_briggsae/genomes/QX1410_nanopore/Feb2020/csq/c_briggsae.QX1410_nanopore.Feb2020.csq.gff3",
   tropicalis_gff = "/projects/b1059/data/c_tropicalis/genomes/NIC58_nanopore/June2021/csq/c_tropicalis.NIC58_nanopore.June2021.csq.gff3",
   
-  elegans_freq = "input_data/all_species/elegans/elegans.frq",
-  briggsae_freq = "input_data/all_species/briggsae/briggsae.frq",
-  tropicalis_freq = "input_data/all_species/tropicalis/tropicalis.frq"
+  elegans_freq = "test_data/c_elegans/ce.comp.map/ce.comp.map_0.05.chr1.frq",
+  briggsae_freq = "test_data/c_briggsae/cb.comp.map/cb.comp.map_0.05.chr1.frq",
+  tropicalis_freq = "test_data/c_tropicalis/ct.comp.map/ct.comp.map_0.05.chr1.frq"
 )
 
 
@@ -72,14 +72,26 @@ briggsae_bim <-  read.csv(params$briggsae_bim, sep='\t', header = FALSE, col.nam
 tropicalis_bim <- read.csv(params$tropicalis_bim, sep='\t', header = FALSE, col.names = c("chrom", "SNP", "CM", "BP", "A1", "A2"))
 
 # Load GFF data, Note change based on where the files are
-elegans_gff <- read.csv(params$elegans_gff, sep='\t', header = FALSE, col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "attributes"))
-elegans_gff_filtered <- filter(elegans_gff, type == 'mRNA') # filtered for just mRNA
+elegans_gff_filtered <- read.csv(
+  params$elegans_gff,
+  sep='\t', header = FALSE, 
+  col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "attributes")
+  )  %>% 
+  dplyr::filter(type == 'mRNA')
 
-briggsae_gff <- read.csv(params$briggsae_gff, sep='\t', header = FALSE, col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "attributes"))
-briggsae_gff_filtered <- filter(briggsae_gff, type == 'mRNA') # filtered for just mRNA
+briggsae_gff_filtered <- read.csv(
+  params$briggsae_gff,
+  sep='\t', header = FALSE, 
+  col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "attributes")
+  )  %>% 
+  dplyr::filter(type == 'mRNA')
 
-tropicalis_gff <- read.csv(params$tropicalis_gff, sep='\t', header = FALSE, col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "attributes"))
-tropicalis_gff_filtered <- filter(tropicalis_gff, type == 'mRNA') # filtered for just mRNA
+tropicalis_gff_filtered <- read.csv(
+  params$tropicalis_gff,
+  sep='\t', header = FALSE, 
+  col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "attributes")
+  )  %>% 
+  dplyr::filter(type == 'mRNA')
 
 # Creating function to annotate the snps 
 annotateSNPs <- function(bim, gff, buffer){
