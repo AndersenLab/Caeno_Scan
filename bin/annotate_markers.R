@@ -91,29 +91,33 @@ get_name <- function(x) {
   return(transcript_id)
 }
 
-elegans_gff_filtered <- read.csv(
-  params$elegans_gff,
-  sep='\t', header = FALSE, 
-  col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "attributes")
-  )  %>% 
-  dplyr::filter(type == 'mRNA') %>% 
-  dplyr::mutate(transcript_id = get_name(attributes))
+elegans_gff_filtered <- data.table::fread(params$elegans_gff,
+                                      sep='\t',
+                                      header = FALSE, 
+                                      col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "attributes"),
+                                      colClasses = c("character", "character", "character", "integer", "integer", "character", "character", "character", "character")
+                                      ) %>% 
+                                    dplyr::filter(type == 'mRNA') %>%
+                                    dplyr::mutate(transcript_id = get_name(attributes))
 
-briggsae_gff_filtered <- read.csv(
-  params$briggsae_gff,
-  sep='\t', header = FALSE, 
-  col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "attributes")
-  )  %>% 
-  dplyr::filter(type == 'mRNA') %>% 
-  dplyr::mutate(transcript_id = get_name(attributes))
+briggsae_gff_filtered <- data.table::fread(params$briggsae_gff,
+                                      sep='\t',
+                                      header = FALSE, 
+                                      col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "attributes"),
+                                      colClasses = c("character", "character", "character", "integer", "integer", "character", "character", "character", "character")
+                                      ) %>% 
+                                    dplyr::filter(type == 'mRNA') %>% 
+                                    dplyr::mutate(transcript_id = get_name(attributes))
+                                
 
-tropicalis_gff_filtered <- read.csv(
-  params$tropicalis_gff,
-  sep='\t', header = FALSE, 
-  col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "attributes")
-  )  %>% 
-  dplyr::filter(type == 'mRNA') %>% 
-  dplyr::mutate(transcript_id = get_name(attributes))
+tropicalis_gff_filtered <- data.table::fread(params$tropicalis_gff,
+                                      sep='\t',
+                                      header = FALSE, 
+                                      col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "attributes"),
+                                      colClasses = c("character", "character", "character", "integer", "integer", "character", "character", "character", "character")
+                                      ) %>% 
+                                    dplyr::filter(type == 'mRNA') %>%
+                                    dplyr::mutate(transcript_id = get_name(attributes))
 
 # Creating function to annotate the snps 
 annotateSNPs <- function(bim, gff, buffer){
