@@ -141,20 +141,25 @@ bim$chrom <- as.character(as.roman(bim$chrom))
 # Create GRanges objects for SNPs and mRNA
 snp_gr <- GRanges(seqnames = bim$chrom, ranges = IRanges(start = bim$BP - buffer, end = bim$BP + buffer))
 mRNA_gr <- GRanges(seqnames = gff$chrom, ranges = IRanges(start = gff$start - buffer, end = gff$end + buffer),
-                   gene_id = gff$transcript_id)
+                   attribute = gff$transcript_id)
 
 # Find overlapping SNPs and mRNA features
-overlaps <- findOverlaps(snp_gr, mRNA_gr)
+overlaps <- findOverlaps(snp_gr, mRNA_gr, type = "within", select = "all")
 
 # Initialize result columns
 bim$Intragenic <- FALSE
 bim$attribute <- NA
 
 # Update columns based on overlaps
-  if (length(overlaps) > 0) {
-    bim$Intragenic[subjectHits(overlaps)] <- TRUE
-    bim$attribute[subjectHits(overlaps)] <- mRNA_gr$gene_id[queryHits(overlaps)]
+if (length(overlaps) > 0) {
+  for (i in seq_along(overlaps)) {
+    snp_index <- queryHits(overlaps)[i]
+    mRNA_index <- subjectHits(overlaps)[i]
+    bim$Intragenic[snp_index] <- TRUE
+    bim$attribute[snp_index] <- mRNA_gr$attribute[mRNA_index]
   }
+}
+
 
 #bim$Gene_ID <- sub(".*:(\\w+\\.\\w+\\.\\w+);.*", "\\1", bim[,8])
 
@@ -170,15 +175,14 @@ n_snps_elegans <- nrow(elegans_bim)
 n_snps_annotated_elegans <- nrow(annotated_elegans)
 n_snps_intragenic_elegans <- nrow(annotated_elegans %>% filter(Intragenic == TRUE))
 n_snps_attribute_id_elegans <- nrow(annotated_elegans %>% filter(!is.na(attribute)))
-n_snps_geneid_elegans <- nrow(annotated_elegans %>% filter(!is.na(Gene_ID)))
+#n_snps_geneid_elegans <- nrow(annotated_elegans %>% filter(!is.na(Gene_ID)))
 
 print(
   glue::glue("There were {n_snps_elegans} SNPs in the elegans data set, 
   {n_snps_annotated_elegans} were annotated, 
   {n_snps_intragenic_elegans} were intragenic,
-  and {n_snps_attribute_id_elegans} had an attribute id associated with them
-  and {n_snps_geneid_elegans} had a gene id associated with them
-  "
+  and {n_snps_attribute_id_elegans} had an attribute id associated with them"
+  # and {n_snps_geneid_elegans} had a gene id associated with them"
 
   )
 )
@@ -242,26 +246,26 @@ add_MAFs <- function(abim, allele_df) {
 OG <- readr::read_tsv('input_data/all_species/orthogroups/20240206_Orthogroups/masterOrthoDB.tsv') 
 colnames(OG) <- c("Orthogroup", "Briggsae", "Tropicalis", "Elegans")
 cpOG <- OG
-OG = unite(OG, Gene_ID, c("Briggsae", "Tropicalis", "Elegans"), sep = " ") %>% 
-  separate_rows(Gene_ID, sep = ",") %>% 
-  separate_rows(Gene_ID, sep = " ")
-OG$Gene_ID <- sub("Transcript_", "", OG$Gene_ID)
-OG$Gene_ID <- sub("transcript_", "", OG$Gene_ID) 
+OG = unite(OG, attribute, c("Briggsae", "Tropicalis", "Elegans"), sep = " ") %>% 
+  separate_rows(attribute, sep = ",") %>% 
+  separate_rows(attribute, sep = " ")
+OG$attribute <- sub("Transcript_", "", OG$attribute)
+OG$attribute <- sub("transcript_", "", OG$attribute) 
 
 
 # function to add OGs 
 add_OG <- function(abim, ortho) {
 
 # Join the two tables based on 'Gene_ID'
-merged_data <- left_join(abim, ortho, by = "Gene_ID")
+merged_data <- left_join(abim, ortho, by = "attribute")
 
 # Group by 'Gene_ID' and make 'OG_list' as a list of unique OG values
 result <- merged_data %>%
-  group_by(Gene_ID) %>%
+  group_by(attribute) %>%
   summarize(OG_list = list(unique(Orthogroup, na.rm = TRUE)))
 
 # Merge the summarized result back to the original 
-final_data <- left_join(abim, result, by = "Gene_ID")
+final_data <- left_join(abim, result, by = "attribute")
 
 return(merged_data)
 
@@ -344,9 +348,9 @@ print(
 
 # Filter out NA values so just the GeneIDs
 
-filtered_all_elegans <- all_elegans %>% filter(!is.na(Gene_ID))
-filtered_all_briggsae <- all_briggsae %>% filter(!is.na(Gene_ID))
-filtered_all_tropicalis <- all_tropicalis %>% filter(!is.na(Gene_ID))
+filtered_all_elegans <- all_elegans %>% filter(!is.na(attribute))
+filtered_all_briggsae <- all_briggsae %>% filter(!is.na(attribute))
+filtered_all_tropicalis <- all_tropicalis %>% filter(!is.na(attribute))
 
 # Save the data for later use
 data.table::fwrite(filtered_all_elegans, glue::glue("{proc_dir}/{date}.filtered_all_elegans.tsv"), sep = "\t")
@@ -356,11 +360,11 @@ data.table::fwrite(filtered_all_tropicalis, glue::glue("{proc_dir}/{date}.filter
 # Count the occurrences of each Gene_ID
 count_genes <- function(df) {
   gene_counts <- df %>% 
-    group_by(Gene_ID, Orthogroup) %>% 
+    group_by(attribute, Orthogroup) %>% 
     summarise(count = n()) %>%
     filter(count > 1)
   # Create a new data frame with Gene_ID and their counts
-  new_df <- data.frame(Gene_ID = gene_counts$Gene_ID, Count = gene_counts$count, Orthogroup = gene_counts$Orthogroup)
+  new_df <- data.frame(attribute = gene_counts$attribute, Count = gene_counts$count, Orthogroup = gene_counts$Orthogroup)
 
   return(new_df)
   
