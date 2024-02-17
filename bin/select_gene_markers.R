@@ -47,7 +47,7 @@ tropicalis_annotated <- read.csv(params$tropicalis_annotated, sep='\t')
 select_snp <- function(df){
   # Group data by attribute
   grouped_data <- df %>% 
-    group_by(attribute)
+    group_by(attribute) 
   
   # Filter data to keep only one SNP per attribute with lowest MAF
   filtered_data <- grouped_data %>%
@@ -59,10 +59,37 @@ select_snp <- function(df){
   
   }
 
-
 # Test function
+# with elegans
+ce_unique_groups <- length(unique(elegans_annotated$attribute))
 selected_elegans <- select_snp(elegans_annotated)
+ce_selected_groups <- nrow(selected_elegans)
+
+# with briggsae
+cb_unique_groups <- length(unique(briggsae_annotated$attribute))
 selected_briggsae <- select_snp(briggsae_annotated)
+cb_selected_groups <- nrow(selected_briggsae)
+
+#with tropicalis
+ct_unique_groups <- length(unique(tropicalis_annotated$attribute))
 selected_tropicalis <- select_snp(tropicalis_annotated)
+ct_selected_groups <- nrow(selected_tropicalis)
 
 
+
+print(
+  glue::glue("There were {ce_unique_groups} attributes in the elegans data set, and 
+  {ce_selected_groups} were selected.")
+)
+
+
+print(
+  glue::glue("There were {cb_unique_groups} attributes in the briggsae data set, and 
+  {cb_selected_groups} were selected.")
+)
+
+
+print(
+  glue::glue("There were {ct_unique_groups} attributes in the tropicalis data set, and 
+  {ct_selected_groups} were selected.")
+)
