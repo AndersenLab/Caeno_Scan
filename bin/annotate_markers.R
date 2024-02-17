@@ -8,11 +8,14 @@ library(data.table)
 library(GenomicRanges)
 library(optparse)
 
+chrom = 'I'
+
+
 #get date and time format as a variable YYYYMMDD_HHMM
 date <- format(Sys.time(), "%Y%m%d_%H%M")
 
 # Create the data folder in the analysis folder
-out_dir = glue::glue("analysis/{date}_OG_SNPs_test")
+out_dir = glue::glue("analysis/{date}_{chrom}_OG_SNPs_test")
 
 # check if the directory exists, if not create it
 if (!dir.exists(out_dir)) {
@@ -57,15 +60,30 @@ params <- list(
   elegans_bim = "test_data/c_elegans/ce.comp.map/ce.comp.map_0.05.bim",
   briggsae_bim = "test_data/c_briggsae/cb.comp.map/cb.comp.map_0.05.bim",
   tropicalis_bim = "test_data/c_tropicalis/ct.comp.map/ct.comp.map_0.05.bim",
-  
+
   elegans_gff = "test_data/c_elegans/genomes/PRJNA13758/WS283/csq/PRJNA13758.WS283.csq.chrI.gff3",
   briggsae_gff = "test_data/c_briggsae/genomes/QX1410_nanopore/Feb2020/csq/QX1410_nanopore.Feb2020.csq.chrI.gff3",
   tropicalis_gff = "test_data/c_tropicalis/genomes/NIC58_nanopore/June2021/csq/NIC58_nanopore.June2021.csq.chrI.gff3",
-  
+
   elegans_freq = "test_data/c_elegans/ce.comp.map/ce.comp.map_0.05.chr1.frq",
   briggsae_freq = "test_data/c_briggsae/cb.comp.map/cb.comp.map_0.05.chr1.frq",
   tropicalis_freq = "test_data/c_tropicalis/ct.comp.map/ct.comp.map_0.05.chr1.frq"
 )
+
+# # Set up inputs for troubleshooting error with large data set
+# params <- list(
+#   elegans_bim = "/projects/b1059/projects/Ryan/ortholog_sims/Caeno_Scan/20240212_fullpopulation_simfiles_noLD_0.00/c_elegans/ce_fullpop/ce_fullpop_0.00.bim",
+#   briggsae_bim = "/projects/b1059/projects/Ryan/ortholog_sims/Caeno_Scan/20240212_fullpopulation_simfiles_noLD_0.00/c_briggsae/cb_fullpop/cb_fullpop_0.00.bim",
+#   tropicalis_bim = "/projects/b1059/projects/Ryan/ortholog_sims/Caeno_Scan/20240212_fullpopulation_simfiles_noLD_0.00/c_tropicalis/ct_fullpop/ct_fullpop_0.00.bim",
+#   
+#   elegans_gff = "/projects/b1059/data/c_elegans/genomes/PRJNA13758/WS283/csq/c_elegans.PRJNA13758.WS283.csq.gff3",
+#   briggsae_gff = "/projects/b1059/data/c_briggsae/genomes/QX1410_nanopore/Feb2020/csq/c_briggsae.QX1410_nanopore.Feb2020.csq.gff3",
+#   tropicalis_gff = "/projects/b1059/data/c_tropicalis/genomes/NIC58_nanopore/June2021/csq/c_tropicalis.NIC58_nanopore.June2021.csq.gff3",
+#   
+#   elegans_freq = "/projects/b1059/projects/Ryan/ortholog_sims/Caeno_Scan/20240212_fullpopulation_simfiles_noLD_0.00/c_elegans/ce_fullpop/ce_fullpop_0.00.frq",
+#   briggsae_freq = "/projects/b1059/projects/Ryan/ortholog_sims/Caeno_Scan/20240212_fullpopulation_simfiles_noLD_0.00/c_briggsae/cb_fullpop/cb_fullpop_0.00.frq",
+#   tropicalis_freq= "/projects/b1059/projects/Ryan/ortholog_sims/Caeno_Scan/20240212_fullpopulation_simfiles_noLD_0.00/c_tropicalis/ct_fullpop/ct_fullpop_0.00.frq"
+# )
 
 
 # Load Bim data , Note change based on where the files are
@@ -92,83 +110,83 @@ get_name <- function(x) {
 }
 
 elegans_gff_filtered <- data.table::fread(params$elegans_gff,
-                                      sep='\t',
-                                      header = FALSE, 
-                                      col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "attributes"),
-                                      # colClasses = c("character", "character", "character", "integer", "integer", "character", "character", "character", "character")
-                                      ) %>% 
-                                    dplyr::filter(type == 'mRNA') %>%
-                                    dplyr::mutate(transcript_id = get_name(attributes)) %>% 
-                                    #convert stop and end to integer
-                                    mutate(start = as.integer(start), end = as.integer(end))
+                                          sep='\t',
+                                          header = FALSE, 
+                                          col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "attributes"),
+                                          # colClasses = c("character", "character", "character", "integer", "integer", "character", "character", "character", "character")
+) %>% 
+  dplyr::filter(type == 'mRNA') %>%
+  dplyr::mutate(transcript_id = get_name(attributes)) %>% 
+  #convert stop and end to integer
+  mutate(start = as.integer(start), end = as.integer(end))
 
 # Check if any of the transcript ids are NA
 elegan_missing_id <- nrow(elegans_gff_filtered %>% filter(is.na(transcript_id)))
 
 
 briggsae_gff_filtered <- data.table::fread(params$briggsae_gff,
-                                      sep='\t',
-                                      header = FALSE, 
-                                      col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "attributes"),
-                                      # colClasses = c("character", "character", "character", "integer", "integer", "character", "character", "character", "character")
-                                      ) %>% 
-                                    dplyr::filter(type == 'mRNA') %>% 
-                                    dplyr::mutate(transcript_id = get_name(attributes)) %>% 
-                                    #convert stop and end to integer
-                                    mutate(start = as.integer(start), end = as.integer(end))
-                                
+                                           sep='\t',
+                                           header = FALSE, 
+                                           col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "attributes"),
+                                           # colClasses = c("character", "character", "character", "integer", "integer", "character", "character", "character", "character")
+) %>% 
+  dplyr::filter(type == 'mRNA') %>% 
+  dplyr::mutate(transcript_id = get_name(attributes)) %>% 
+  #convert stop and end to integer
+  mutate(start = as.integer(start), end = as.integer(end))
+
 briggsae_missing_id <- nrow(briggsae_gff_filtered %>% filter(is.na(transcript_id)))
 
 tropicalis_gff_filtered <- data.table::fread(params$tropicalis_gff,
-                                      sep='\t',
-                                      header = FALSE, 
-                                      col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "attributes"),
-                                      # colClasses = c("character", "character", "character", "integer", "integer", "character", "character", "character", "character")
-                                      ) %>% 
-                                    dplyr::filter(type == 'mRNA') %>%
-                                    dplyr::mutate(transcript_id = get_name(attributes)) %>% 
-                                    #convert stop and end to integer
-                                    mutate(start = as.integer(start), end = as.integer(end))
+                                             sep='\t',
+                                             header = FALSE, 
+                                             col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "attributes"),
+                                             # colClasses = c("character", "character", "character", "integer", "integer", "character", "character", "character", "character")
+) %>% 
+  dplyr::filter(type == 'mRNA') %>%
+  dplyr::mutate(transcript_id = get_name(attributes)) %>% 
+  #convert stop and end to integer
+  mutate(start = as.integer(start), end = as.integer(end))
 
 tropicalis_missing_id <- nrow(tropicalis_gff_filtered %>% filter(is.na(transcript_id)))
 
 # Creating function to annotate the snps 
-annotateSNPs <- function(bim, gff, buffer){
+annotateSNPs <- function(bim, gff, chrom, buffer){
   
-# Convert PLINK chromosome to roman numeral to match GFF file
-bim$chrom <- as.character(as.roman(bim$chrom))
-
-# Create GRanges objects for SNPs and mRNA
-snp_gr <- GRanges(seqnames = bim$chrom, ranges = IRanges(start = bim$BP - buffer, end = bim$BP + buffer))
-mRNA_gr <- GRanges(seqnames = gff$chrom, ranges = IRanges(start = gff$start - buffer, end = gff$end + buffer),
-                   attribute = gff$transcript_id)
-
-# Find overlapping SNPs and mRNA features
-overlaps <- findOverlaps(snp_gr, mRNA_gr, type = "within", select = "all")
-
-# Initialize result columns
-bim$Intragenic <- FALSE
-bim$attribute <- NA
-
-# Update columns based on overlaps
-if (length(overlaps) > 0) {
-  for (i in seq_along(overlaps)) {
-    snp_index <- queryHits(overlaps)[i]
-    mRNA_index <- subjectHits(overlaps)[i]
-    bim$Intragenic[snp_index] <- TRUE
-    bim$attribute[snp_index] <- mRNA_gr$attribute[mRNA_index]
+  # Convert PLINK chromosome to roman numeral to match GFF file
+  bim$chrom <- as.character(as.roman(bim$chrom))
+  
+  # Create GRanges objects for SNPs and mRNA
+  snp_gr <- GRanges(seqnames = chrom, ranges = IRanges(start = bim$BP - buffer, end = bim$BP + buffer))
+  mRNA_gr <- GRanges(seqnames = chrom, ranges = IRanges(start = gff$start - buffer, end = gff$end + buffer),
+                     attribute = gff$transcript_id)
+  
+  # Find overlapping SNPs and mRNA features
+  overlaps <- findOverlaps(snp_gr, mRNA_gr, type = "within", select = "all")
+  
+  # Initialize result columns
+  bim$Intragenic <- FALSE
+  bim$attribute <- NA
+  
+  # Update columns based on overlaps
+  if (length(overlaps) > 0) {
+    for (i in seq_along(overlaps)) {
+      snp_index <- queryHits(overlaps)[i]
+      mRNA_index <- subjectHits(overlaps)[i]
+      bim$Intragenic[snp_index] <- TRUE
+      bim$attribute[snp_index] <- mRNA_gr$attribute[mRNA_index]
+    }
   }
-}
-
-
-#bim$Gene_ID <- sub(".*:(\\w+\\.\\w+\\.\\w+);.*", "\\1", bim[,8])
-
-return(bim)
+  
+  
+  #bim$Gene_ID <- sub(".*:(\\w+\\.\\w+\\.\\w+);.*", "\\1", bim[,8])
+  
+  return(bim)
 }
 
 
 # Test annotate function with elegans
-annotated_elegans <- annotateSNPs(elegans_bim, elegans_gff_filtered, 0)
+annotated_elegans <- annotateSNPs(elegans_bim, elegans_gff_filtered,chrom, 1)
 
 #check the output
 n_snps_elegans <- nrow(elegans_bim)
@@ -182,8 +200,8 @@ print(
   {n_snps_annotated_elegans} were annotated, 
   {n_snps_intragenic_elegans} were intragenic,
   and {n_snps_attribute_id_elegans} had an attribute id associated with them"
-  # and {n_snps_geneid_elegans} had a gene id associated with them"
-
+             # and {n_snps_geneid_elegans} had a gene id associated with them"
+             
   )
 )
 
@@ -195,7 +213,7 @@ print(
 
 
 # Test function with briggsae
-annotated_briggsae <- annotateSNPs(briggsae_bim, briggsae_gff_filtered, 0)
+annotated_briggsae <- annotateSNPs(briggsae_bim, briggsae_gff_filtered,chrom, 0)
 
 #check the output
 n_snps_briggsae <- nrow(briggsae_bim)
@@ -206,7 +224,7 @@ print(
 )
 
 # Test function with tropicalis
-annotated_tropicalis <- annotateSNPs(tropicalis_bim, tropicalis_gff_filtered, 0)
+annotated_tropicalis <- annotateSNPs(tropicalis_bim, tropicalis_gff_filtered, chrom,0)
 
 #check the output
 n_snps_tropicalis <- nrow(tropicalis_bim)
@@ -255,20 +273,20 @@ OG$attribute <- sub("transcript_", "", OG$attribute)
 
 # function to add OGs 
 add_OG <- function(abim, ortho) {
-
-# Join the two tables based on 'Gene_ID'
-merged_data <- left_join(abim, ortho, by = "attribute")
-
-# Group by 'Gene_ID' and make 'OG_list' as a list of unique OG values
-result <- merged_data %>%
-  group_by(attribute) %>%
-  summarize(OG_list = list(unique(Orthogroup, na.rm = TRUE)))
-
-# Merge the summarized result back to the original 
-final_data <- left_join(abim, result, by = "attribute")
-
-return(merged_data)
-
+  
+  # Join the two tables based on 'Gene_ID'
+  merged_data <- left_join(abim, ortho, by = "attribute")
+  
+  # Group by 'Gene_ID' and make 'OG_list' as a list of unique OG values
+  result <- merged_data %>%
+    group_by(attribute) %>%
+    summarize(OG_list = list(unique(Orthogroup, na.rm = TRUE)))
+  
+  # Merge the summarized result back to the original 
+  final_data <- left_join(abim, result, by = "attribute")
+  
+  return(merged_data)
+  
 }
 
 # test function with elegans
@@ -353,9 +371,9 @@ filtered_all_briggsae <- all_briggsae %>% filter(!is.na(attribute))
 filtered_all_tropicalis <- all_tropicalis %>% filter(!is.na(attribute))
 
 # Save the data for later use
-data.table::fwrite(filtered_all_elegans, glue::glue("{proc_dir}/{date}.filtered_all_elegans.tsv"), sep = "\t")
-data.table::fwrite(filtered_all_briggsae, glue::glue("{proc_dir}/{date}.filtered_all_briggsae.tsv"), sep = "\t")
-data.table::fwrite(filtered_all_tropicalis, glue::glue("{proc_dir}/{date}.filtered_all_tropicalis.tsv"), sep = "\t")
+data.table::fwrite(filtered_all_elegans, glue::glue("{proc_dir}/{date}_{chrom}.filtered_all_elegans.tsv"), sep = "\t")
+data.table::fwrite(filtered_all_briggsae, glue::glue("{proc_dir}/{date}_{chrom}.filtered_all_briggsae.tsv"), sep = "\t")
+data.table::fwrite(filtered_all_tropicalis, glue::glue("{proc_dir}/{date}_{chrom}.filtered_all_tropicalis.tsv"), sep = "\t")
 
 # Count the occurrences of each Gene_ID
 count_genes <- function(df) {
@@ -365,7 +383,7 @@ count_genes <- function(df) {
     filter(count > 1)
   # Create a new data frame with Gene_ID and their counts
   new_df <- data.frame(attribute = gene_counts$attribute, Count = gene_counts$count, Orthogroup = gene_counts$Orthogroup)
-
+  
   return(new_df)
   
 }
@@ -379,7 +397,7 @@ genes_tropicalis <- count_genes(filtered_all_tropicalis)
 
 #Plot the counts
 elegans_hist<- ggplot(genes_elegans, aes(x = Count)) + geom_histogram(fill = 'cyan', color = "black", binwidth = 1) +
-  labs(title = "Histogram of Elegans Counts w 100 bp buffer",
+  labs(title = "Histogram of Elegans Counts",
        x = "Number SNPs per Gene",
        y = "Frequency")
 #print(elegans_hist)
@@ -395,7 +413,7 @@ ggsave(
 )
 
 briggsae_hist<- ggplot(genes_briggsae, aes(x = Count)) + geom_histogram(fill = "deeppink", color = "black", binwidth = 1) +
-  labs(title = "Histogram of Birggsae Counts w 100 bp buffer",
+  labs(title = "Histogram of Birggsae Counts",
        x = "Number SNPs per Gene",
        y = "Frequency")
 #print(briggsae_hist)
@@ -411,7 +429,7 @@ ggsave(
 )
 
 tropicalis_hist<- ggplot(genes_tropicalis, aes(x = Count)) + geom_histogram(fill = "blueviolet", color = "black", binwidth = 1) +
-  labs(title = "Histogram of Tropicalis Counts w 100 bp buffer",
+  labs(title = "Histogram of Tropicalis Counts",
        x = "Number SNPs per Gene",
        y = "Frequency")
 #print(tropicalis_hist)
@@ -455,9 +473,6 @@ ggsave(
   units = "in",
   dpi = 300
 )
-
-
-
 
 
 
