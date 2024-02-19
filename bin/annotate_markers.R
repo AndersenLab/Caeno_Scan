@@ -163,15 +163,15 @@ annotateSNPs_bedtools <- function(bim, gff, buffer) {
   max_cols <- max(ncol(snp_bed), ncol(mRNA_bed))
   snp_bed <- cbind(snp_bed, matrix(NA, nrow = nrow(snp_bed), ncol = max_cols - ncol(snp_bed)))
   mRNA_bed <- cbind(mRNA_bed, matrix(NA, nrow = nrow(mRNA_bed), ncol = max_cols - ncol(mRNA_bed)))
-  
+
   # Run bedtools intersect 
-  overlaps <- suppressWarnings(system2(
+  overlaps <- system2(
     command = "bedtools",
     args = c("intersect", "-wa", "-wb", "-loj"),
     stdin = capture.output(write.table(rbind(snp_bed, mRNA_bed), sep = "\t", col.names = FALSE, row.names = FALSE)),
     stdout = TRUE,
     stderr = TRUE
-  ))
+  )
   
   # Read the output
   overlaps <- read.table(text = overlaps, header = FALSE, col.names = c("snp_chr", "snp_start", "snp_end", "snp_index", "mRNA_chr", "mRNA_start", "mRNA_end", "transcript_id"), stringsAsFactors = FALSE)
