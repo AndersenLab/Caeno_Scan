@@ -151,7 +151,7 @@ tropicalis_gff_filtered <- data.table::fread(params$tropicalis_gff,
 
 tropicalis_missing_id <- nrow(tropicalis_gff_filtered %>% filter(is.na(transcript_id)))
 
-annotateSNPs_bedtools <- function(bim, gff, buffer) {
+annotateSNPs <- function(bim, gff, buffer) {
   # Convert PLINK chromosome to roman numeral to match GFF file
   bim$chrom <- as.character(as.roman(bim$chrom))
   
@@ -165,13 +165,14 @@ annotateSNPs_bedtools <- function(bim, gff, buffer) {
   mRNA_bed <- cbind(mRNA_bed, matrix(NA, nrow = nrow(mRNA_bed), ncol = max_cols - ncol(mRNA_bed)))
 
   # Run bedtools intersect 
-  overlaps <- system2(
+  overlaps <-system2(
     command = "bedtools",
-    args = c("intersect", "-wa", "-wb", "-loj"),
-    stdin = capture.output(write.table(rbind(snp_bed, mRNA_bed), sep = "\t", col.names = FALSE, row.names = FALSE)),
+    args = c("intersect", "-a", snp_bed, "-b", mRNA_bed, "-wa", "-wb", "loj"),
     stdout = TRUE,
     stderr = TRUE
   )
+  cat("stdout:", overlaps[1], "\n")
+  cat("stderr:", overlaps[2], "\n")
   
   # Read the output
   overlaps <- read.table(text = overlaps, header = FALSE, col.names = c("snp_chr", "snp_start", "snp_end", "snp_index", "mRNA_chr", "mRNA_start", "mRNA_end", "transcript_id"), stringsAsFactors = FALSE)
@@ -189,11 +190,8 @@ annotateSNPs_bedtools <- function(bim, gff, buffer) {
       bim$attribute[snp_index] <- mRNA_id
     }
   }
-  
   return(bim)
 }
-
-
 
 # Test annotate function with elegans
 annotated_elegans <- annotateSNPs(elegans_bim, elegans_gff_filtered, 1)
