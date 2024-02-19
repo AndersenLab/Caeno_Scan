@@ -7,8 +7,9 @@ library(ggplot2)
 library(data.table)
 library(GenomicRanges)
 library(optparse)
+library(data.table)
 
-chrom = 'I'
+#chrom = 'I'
 
 
 #get date and time format as a variable YYYYMMDD_HHMM
@@ -112,11 +113,11 @@ get_name <- function(x) {
 elegans_gff_filtered <- data.table::fread(params$elegans_gff,
                                           sep='\t',
                                           header = FALSE, 
-                                          col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "attributes"),
+                                          col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "transcript_id"),
                                           # colClasses = c("character", "character", "character", "integer", "integer", "character", "character", "character", "character")
 ) %>% 
   dplyr::filter(type == 'mRNA') %>%
-  dplyr::mutate(transcript_id = get_name(attributes)) %>% 
+  dplyr::mutate(transcript_id = get_name(transcript_id)) %>% 
   #convert stop and end to integer
   mutate(start = as.integer(start), end = as.integer(end))
 
@@ -127,11 +128,11 @@ elegan_missing_id <- nrow(elegans_gff_filtered %>% filter(is.na(transcript_id)))
 briggsae_gff_filtered <- data.table::fread(params$briggsae_gff,
                                            sep='\t',
                                            header = FALSE, 
-                                           col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "attributes"),
+                                           col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "transcript_id"),
                                            # colClasses = c("character", "character", "character", "integer", "integer", "character", "character", "character", "character")
 ) %>% 
   dplyr::filter(type == 'mRNA') %>% 
-  dplyr::mutate(transcript_id = get_name(attributes)) %>% 
+  dplyr::mutate(transcript_id = get_name(transcript_id)) %>% 
   #convert stop and end to integer
   mutate(start = as.integer(start), end = as.integer(end))
 
@@ -140,53 +141,62 @@ briggsae_missing_id <- nrow(briggsae_gff_filtered %>% filter(is.na(transcript_id
 tropicalis_gff_filtered <- data.table::fread(params$tropicalis_gff,
                                              sep='\t',
                                              header = FALSE, 
-                                             col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "attributes"),
+                                             col.names = c("chrom", "source", "type", "start", "end", "score", "strand", "phase", "transcript_id"),
                                              # colClasses = c("character", "character", "character", "integer", "integer", "character", "character", "character", "character")
 ) %>% 
   dplyr::filter(type == 'mRNA') %>%
-  dplyr::mutate(transcript_id = get_name(attributes)) %>% 
+  dplyr::mutate(transcript_id = get_name(transcript_id)) %>% 
   #convert stop and end to integer
   mutate(start = as.integer(start), end = as.integer(end))
 
 tropicalis_missing_id <- nrow(tropicalis_gff_filtered %>% filter(is.na(transcript_id)))
 
-# Creating function to annotate the snps 
-annotateSNPs <- function(bim, gff, chrom, buffer){
-  
+annotateSNPs_bedtools <- function(bim, gff, buffer) {
   # Convert PLINK chromosome to roman numeral to match GFF file
   bim$chrom <- as.character(as.roman(bim$chrom))
   
-  # Create GRanges objects for SNPs and mRNA
-  snp_gr <- GRanges(seqnames = chrom, ranges = IRanges(start = bim$BP - buffer, end = bim$BP + buffer))
-  mRNA_gr <- GRanges(seqnames = chrom, ranges = IRanges(start = gff$start - buffer, end = gff$end + buffer),
-                     attribute = gff$transcript_id)
+  # Create BED data frames for SNPs and mRNA
+  snp_bed <- data.frame(chrom = bim$chrom, start = bim$BP - buffer, end = bim$BP + buffer)
+  mRNA_bed <- data.frame(chrom = gff$chrom, start = gff$start - buffer, end = gff$end + buffer, transcript_id = gff$transcript_id)
   
-  # Find overlapping SNPs and mRNA features
-  overlaps <- findOverlaps(snp_gr, mRNA_gr, type = "within", select = "all")
+  # Ensure both data frames have the same number of columns
+  max_cols <- max(ncol(snp_bed), ncol(mRNA_bed))
+  snp_bed <- cbind(snp_bed, matrix(NA, nrow = nrow(snp_bed), ncol = max_cols - ncol(snp_bed)))
+  mRNA_bed <- cbind(mRNA_bed, matrix(NA, nrow = nrow(mRNA_bed), ncol = max_cols - ncol(mRNA_bed)))
+  
+  # Run bedtools intersect 
+  overlaps <- suppressWarnings(system2(
+    command = "bedtools",
+    args = c("intersect", "-wa", "-wb", "-loj"),
+    stdin = capture.output(write.table(rbind(snp_bed, mRNA_bed), sep = "\t", col.names = FALSE, row.names = FALSE)),
+    stdout = TRUE,
+    stderr = TRUE
+  ))
+  
+  # Read the output
+  overlaps <- read.table(text = overlaps, header = FALSE, col.names = c("snp_chr", "snp_start", "snp_end", "snp_index", "mRNA_chr", "mRNA_start", "mRNA_end", "transcript_id"), stringsAsFactors = FALSE)
   
   # Initialize result columns
   bim$Intragenic <- FALSE
   bim$attribute <- NA
   
   # Update columns based on overlaps
-  if (length(overlaps) > 0) {
-    for (i in seq_along(overlaps)) {
-      snp_index <- queryHits(overlaps)[i]
-      mRNA_index <- subjectHits(overlaps)[i]
+  if (nrow(overlaps) > 0) {
+    for (i in 1:nrow(overlaps)) {
+      snp_index <- overlaps$snp_index[i]
+      mRNA_id <- overlaps$transcript_id[i]
       bim$Intragenic[snp_index] <- TRUE
-      bim$attribute[snp_index] <- mRNA_gr$attribute[mRNA_index]
+      bim$attribute[snp_index] <- mRNA_id
     }
   }
-  
-  
-  #bim$Gene_ID <- sub(".*:(\\w+\\.\\w+\\.\\w+);.*", "\\1", bim[,8])
   
   return(bim)
 }
 
 
+
 # Test annotate function with elegans
-annotated_elegans <- annotateSNPs(elegans_bim, elegans_gff_filtered,chrom, 1)
+annotated_elegans <- annotateSNPs(elegans_bim, elegans_gff_filtered, 1)
 
 #check the output
 n_snps_elegans <- nrow(elegans_bim)
@@ -213,7 +223,7 @@ print(
 
 
 # Test function with briggsae
-annotated_briggsae <- annotateSNPs(briggsae_bim, briggsae_gff_filtered,chrom, 0)
+annotated_briggsae <- annotateSNPs(briggsae_bim, briggsae_gff_filtered, 0)
 
 #check the output
 n_snps_briggsae <- nrow(briggsae_bim)
@@ -224,7 +234,7 @@ print(
 )
 
 # Test function with tropicalis
-annotated_tropicalis <- annotateSNPs(tropicalis_bim, tropicalis_gff_filtered, chrom,0)
+annotated_tropicalis <- annotateSNPs(tropicalis_bim, tropicalis_gff_filtered,0)
 
 #check the output
 n_snps_tropicalis <- nrow(tropicalis_bim)
