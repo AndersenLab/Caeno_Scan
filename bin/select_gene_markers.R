@@ -20,7 +20,7 @@ if (!dir.exists(out_dir)) {
 
 ## Create sub directories for figures and processed data
 
-proc_dir = glue::glue("{out_dir}/proc_data")
+proc_dir = glue::glue("{out_dir}/snp_data")
 
 # Check if the directory exists, if not create it
 # if (!dir.exists(figure_dir)) {
@@ -63,16 +63,19 @@ select_snp <- function(df){
 # with elegans
 ce_unique_groups <- length(unique(elegans_annotated$attribute))
 selected_elegans <- select_snp(elegans_annotated)
+ce_snps <- select(selected_elegans, SNP)
 ce_selected_groups <- nrow(selected_elegans)
 
 # with briggsae
 cb_unique_groups <- length(unique(briggsae_annotated$attribute))
 selected_briggsae <- select_snp(briggsae_annotated)
+cb_snps <- select(selected_briggsae, SNP)
 cb_selected_groups <- nrow(selected_briggsae)
 
 #with tropicalis
 ct_unique_groups <- length(unique(tropicalis_annotated$attribute))
 selected_tropicalis <- select_snp(tropicalis_annotated)
+ct_snps <- select(selected_tropicalis, SNP)
 ct_selected_groups <- nrow(selected_tropicalis)
 
 
@@ -93,3 +96,10 @@ print(
   glue::glue("There were {ct_unique_groups} attributes in the tropicalis data set, and 
   {ct_selected_groups} were selected.")
 )
+
+
+# Sending out snp list
+data.table::fwrite(ce_snps, glue::glue("{proc_dir}/{date}.snplist_elegans.tsv"))
+data.table::fwrite(cb_snps, glue::glue("{proc_dir}/{date}.snplist__briggsae.tsv"))
+data.table::fwrite(ct_snps, glue::glue("{proc_dir}/{date}.snplist__tropicalis.tsv"))
+
