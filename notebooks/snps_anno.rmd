@@ -1,0 +1,212 @@
+Code to get the SNP annotation process running faster.
+```{r}
+library(tidyverse)
+library(data.table)
+```
+
+# Load in the annotation file
+Our test file will be a version of the CT annotation file I have locally from the ben-1 betatubulin project
+```{r}
+anno_file_path <- "/Volumes/Macintosh HD/Users/ryanmckeown/Desktop/Caeno_Scan/input_data/c_tropicalis/annotations/WI.20230305.strain-annotation.tsv"
+```
+
+Lets read in the annotation file but only the first 10 lines to see what it looks like
+```{r}
+anno_file <- read.table(anno_file_path, header = TRUE, sep = "\t", nrows = 10)
+head(anno_file)
+```
+
+Lets write a quick function that reads in just the `CHROM` `POS` `WORMBASE_ID` `TRANSCRIPT` columns
+```{r}
+read_anno <- function(anno_file_path, chroms = c("I", "II", "III", "IV", "V", "X")){
+  
+  chrom_key <- c(
+    "I" = "1",
+    "II" = "2",
+    "III" = "3",
+    "IV" = "4",
+    "V" = "5",
+    "X" = "6"
+    )
+  
+  
+  anno_df <- data.table::fread(anno_file_path,    
+    select = c("CHROM",
+                "POS",
+                "CONSEQUENCE",
+                "WORMBASE_ID",
+                "TRANSCRIPT",
+                "REF",
+                "ALT"
+                )
+    )%>%
+    dplyr::filter(CHROM %in% chroms)%>%
+    #filter out any rows with an '@' symbol in the Consequece column
+    dplyr::filter(!grepl("@", CONSEQUENCE))%>%
+    dplyr::mutate(CHROM = chrom_key[CHROM])%>%
+    dplyr::mutate(marker = paste0(CHROM, ":", POS))%>%
+    dplyr::select(-CHROM, -POS)
+
+    #Get the total number of rows
+    cat("Number of rows in the annotation file: ", nrow(anno_df), "\n")
+
+    #get the total number of unique rows
+    cat("Number of unique rows in the annotation file: ", nrow(unique(anno_df)), "\n")
+
+
+
+
+return(anno_df)
+}
+
+anno_df <- read_anno(anno_file_path)
+```
+
+# Load in the Bim File
+
+```{r}
+bim_file_path <- "test_data/c_tropicalis/ct.comp.map/ct.comp.map_0.05.bim"
+```
+
+Function to Read in the bim file
+```{r}
+read_bim <- function(bim_file_path){
+  bim_df <- data.table::fread(
+    bim_file_path,
+    #set the column names
+    col.names = c("CHROM", "SNP", "CM", "BP", "A1", "A2")
+    )
+
+    #Get the total number of rows
+    cat("Number of rows in the bim file: ", nrow(bim_df), "\n")
+
+    #get the total number of unique rows
+    cat("Number of unique rows in the bim file: ", nrow(unique(bim_df)), "\n")
+
+  return(bim_df)
+
+}
+
+bim_df <- read_bim(bim_file_path)
+```
+
+# Merge the annotation and bim files
+```{r}
+merged_df <- dplyr::left_join(bim_df, unique(anno_df), by = c("SNP" = "marker"))
+
+#Get the total number of rows
+
+cat("Number of rows in the merged file: ", nrow(merged_df), "\n")
+```
+
+It looks like we have several markers in the bim that match more than one feature in the annotation file. Lets take a look at markers that have more than one annotation
+```{r}
+multi_anno_markers <- merged_df%>%
+  dplyr::group_by(SNP)%>%
+  dplyr::summarize(n = n())%>%
+  dplyr::filter(n > 1)
+```
+
+Lets take a look at these multi-anno markers in the merged_df
+```{r}
+multi_anno_df <- merged_df%>%
+  dplyr::filter(SNP %in% multi_anno_markers$SNP)
+head(multi_anno_df)
+``` 
+
+## Now lets reduce the columns to `CHROM` `SNP` `BP` `A1` `A2` `WORMBASE_ID`
+```{r}
+anno_snp_df <- merged_df%>%
+  dplyr::select(CHROM, SNP, BP, A1, A2, WORMBASE_ID)%>%
+  unique()
+head(anno_snp_df)
+nrow(anno_snp_df)
+```
+
+Now lets check the SNPs that fall into more than one feature
+```{r}
+multi_anno_snp <- anno_snp_df%>%
+  dplyr::group_by(SNP)%>%
+  dplyr::summarize(
+    n = n(),
+    #list the WORMBASE_IDs
+    WORMBASE_IDs = paste0(WORMBASE_ID, collapse = ", ")
+    )%>%
+  dplyr::filter(n > 1)
+
+head(multi_anno_snp)
+tail(multi_anno_snp)
+```
+
+Lets check out these SNPs that overlap with one NA feature and one gene feature.
+
+This is because we have multiple transcripts of the same gene. Our orthogroup data from `masterOrthogroups.txt` just contains the gene IDs for the longest transcripts. We can remove the transcipt column from the annotation file and merge the bim and annotation files again.
+
+Lets remove the transcript column from the annotation file and merge the files again
+```{r}
+anno_df <- anno_df%>%
+  dplyr::select(-TRANSCRIPT)
+
+merged_df <- dplyr::left_join(
+    bim_df,
+    unique(anno_df),
+    by = c(
+        "SNP" = "marker",
+        "A1" = "REF",
+        "A2" = "ALT"
+        )
+    )
+
+#Get the total number of rows
+cat("Number of rows in the merged file: ", nrow(merged_df), "\n")
+```
+
+Now with the transcript column removed, we expect that all SNPs in the bim file should have an annotation. 
+
+We still have some SNPs that have more than one annotation. Lets take a look at these
+```{r}
+multi_anno_markers <- merged_df%>%
+  dplyr::group_by(SNP)%>%
+  dplyr::summarize(n = n())%>%
+  dplyr::filter(n > 1)
+
+nrow(multi_anno_markers)
+
+
+multi_anno_df <- merged_df%>%
+    dplyr::filter(SNP %in% multi_anno_markers$SNP)
+head(multi_anno_df)
+```
+Intersting, many of the SNPs that have more than one annotation have one row with an NA in the WORMBASE_ID column and an actual value in the other row. Lets check how many rows have NA in the WORMBASE_ID column
+```{r}
+multi_anno_df %>%
+  dplyr::filter(is.na(WORMBASE_ID))%>%
+  dplyr::summarize(n = n())
+```
+
+Lets check out the SNPs that have an NA in the WORMBASE_ID column for one row, but an actual value in the other row
+```{r}
+na_anno_df <- multi_anno_df %>%
+    group_by(SNP, A1, A2)%>%
+    #retrun the rows that have an NA in the WORMBASE_ID column
+    dplyr::filter(is.na(WORMBASE_ID))
+```
+
+Lets take a look at these makers in the orignal annotation file
+```{r}
+anno_df%>%
+  dplyr::filter(marker %in% na_anno_df$SNP)%>%
+  head()
+```
+
+
+Lets load in all the columns of the annotation file and have a look at an example entry `CHROM` = I , `POS` = `5040704`
+```{r}
+anno_df_raw <- data.table::fread(anno_file_path)
+
+#filter to the example entry
+anno_df%>%
+  dplyr::filter(CHROM == "I", POS == 5040704)
+```
+
+Ahhh.. these are the complex annotations where we have multiple consenqueces.

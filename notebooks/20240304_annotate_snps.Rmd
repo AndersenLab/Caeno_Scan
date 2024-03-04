@@ -3,6 +3,9 @@ The goal of this script is to develop code to filter the annotation file to incl
 ```{r}
 library(tidyverse)
 library(data.table)
-```
+``````
+Load the test annotation file
 
-Load the annotation file
+```{r}
+ct_anno_data_file <- "~/Desktop/ben_1_ortholog_variation/annotation/c_tropicalis/WI.20230305.strain-annotation.tsv"
+```

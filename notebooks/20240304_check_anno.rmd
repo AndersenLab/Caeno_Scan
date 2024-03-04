@@ -1,0 +1,110 @@
+```{r}
+library(tidyverse)
+library(data.table)
+```
+
+```{r}
+ct_anno_file_20231201 <- "input_data/c_tropicalis/annotations/WI.20231201.strain-annotation.tsv"
+ct_anno_file_20230305 <- "input_data/c_tropicalis/annotations/WI.20230305.strain-annotation.tsv"
+```
+
+```{r}
+ct_anno_20231201 <- fread(ct_anno_file_20231201)
+
+ct_anno_20230305 <- fread(ct_anno_file_20230305)
+```
+
+Lets look at the unique chromosome IDs in the annotation files
+```{r}
+ct_anno_20231201 %>% 
+  distinct(CHROM)
+
+ct_anno_20230305 %>% 
+  distinct(CHROM)
+```
+```{r}
+ct_anno_20231201 %>% 
+  head()
+```
+
+```{r}
+ct_anno_20230305 %>% 
+  head()
+```
+
+Now lets look at just the columns we will want for the annotation of GWAS markers
+```{r}
+#read in the annotation file
+read_anno <- function(anno_file_path, chroms = c("I", "II", "III", "IV", "V", "X")) {
+    chrom_key <- c(
+        "I" = "1",
+        "II" = "2",
+        "III" = "3",
+        "IV" = "4",
+        "V" = "5",
+        "X" = "6"
+    )
+    anno_df <- data.table::fread(anno_file_path,
+        select = c(
+            "CHROM",
+            "POS",
+            "CONSEQUENCE",
+            "WORMBASE_ID",
+            "GENE",
+            "TRANSCRIPT",
+            "REF",
+            "ALT"
+        )
+    ) %>%
+        dplyr::filter(CHROM %in% chroms) %>%
+        # filter out any rows with an '@' symbol in the Consequece column
+        dplyr::filter(!grepl("@", CONSEQUENCE)) %>%
+        dplyr::mutate(CHROM = chrom_key[CHROM]) %>%
+        dplyr::mutate(marker = paste0(CHROM, ":", POS)) %>%
+        dplyr::select(-CHROM, -POS, -CONSEQUENCE)
+
+    print(names(anno_df))
+    # Get the total number of rows
+    cat("Number of rows in the annotation file: ", nrow(anno_df), "\n")
+
+    # get the total number of unique rows
+    cat("Number of unique rows in the annotation file: ", nrow(unique(anno_df)), "\n")
+
+    return(anno_df)
+}
+```
+
+```{r}
+ct_anno_20231201 <- read_anno(ct_anno_file_20231201) %>%
+    select(marker, GENE, REF, ALT)
+
+#Get the number of unique rows
+ct_anno_20231201 %>% 
+  distinct() %>% 
+  nrow()
+
+#Get the number of unique rows with gene names
+ct_anno_20231201 %>% 
+  filter(!is.na(GENE)) %>% 
+  distinct() %>% 
+  nrow()
+```
+
+
+```{r}
+ct_anno_20230305 <- read_anno(ct_anno_file_20230305)%>%
+    select(marker, WORMBASE_ID, REF, ALT)
+
+#Get the number of unique rows
+ct_anno_20230305 %>% 
+  distinct() %>% 
+  nrow()
+
+#Get the number of unique rows with gene names
+ct_anno_20230305 %>% 
+  filter(!is.na(WORMBASE_ID)) %>% 
+  distinct() %>% 
+  nrow()
+```
+
+
