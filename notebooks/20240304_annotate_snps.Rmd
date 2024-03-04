@@ -1,0 +1,8 @@
+The goal of this script is to develop code to filter the annotation file to include only markers listed in a `.bim` file from plink.
+
+```{r}
+library(tidyverse)
+library(data.table)
+```
+
+Load the annotation file
