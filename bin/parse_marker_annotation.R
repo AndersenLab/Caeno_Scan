@@ -4,10 +4,10 @@ library(data.table)
 #parse the command line arguments
 args <- commandArgs(trailingOnly = TRUE)
 #sp_annotation_file <- args[1]
-sp_annotation_file <- "/Volumes/Macintosh HD/Users/ryanmckeown/Desktop/Caeno_Scan/input_data/c_tropicalis/annotations/WI.20231201.strain-annotation.tsv"
+sp_annotation_file <- "input_data/c_tropicalis/annotations/WI.20231201.strain-annotation.tsv"
 
 #marker_file <- args[2]
-marker_file <- "proc_data/ct_fullpop_0.00.bim"
+marker_file <- "proc_data/20240304_fullpopulation_simfiles_noLD_0.00/c_tropicalis/ct.fullpop/ct.fullpop_0.00.bim"
 
 #read in the annotation file
 read_anno <- function(anno_file_path, chroms = c("I", "II", "III", "IV", "V", "X")) {
@@ -91,10 +91,10 @@ merged_df <- dplyr::left_join(
 cat("Number of rows in the merged file: ", nrow(merged_df), "\n")
 
 #Get the number of markers that do not have an annotation
-cat("Number of markers that do not have an annotation: ", sum(is.na(merged_df$WORMBASE_ID)), "\n")
+cat("Number of markers that do not have an annotation: ", sum(is.na(merged_df$GENE)), "\n")
 
 #Get the number of markers that have a non-NA WORMBASE_ID
-cat("Number of markers that have an annotation: ", sum(!is.na(merged_df$WORMBASE_ID)), "\n")
+cat("Number of markers that have an annotation: ", sum(!is.na(merged_df$GENE)), "\n")
 #Get the number of markers that have more than one annotation ** DOES NOT WORK **
 #cat("Number of markers that have more than one annotation: ", sum(duplicated(merged_df$SNP)), "\n")
 
@@ -104,7 +104,7 @@ multi_anno_markers <- merged_df%>%
   dplyr::summarize(
     n = n(),
     #print the gene names
-    genes = paste0(unique(WORMBASE_ID), collapse = ", ")
+    genes = paste0(unique(GENE), collapse = ", ")
     )%>%
   dplyr::filter(n > 1)
 
