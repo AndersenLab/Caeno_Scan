@@ -41,3 +41,4 @@ test_data/c_elegans/ce.comp.map/ce.comp.map_0.05.frq
 test_data/c_briggsae/cb.comp.map/cb.comp.map_0.05.frq
 test_data/c_tropicalis/ct.comp.map/ct.comp.map_0.05.frq
 *.strain-annotation.tsv
+*.gff3
