@@ -16,17 +16,16 @@ date <- format(Sys.time(), "%Y%m%d_%H%M")
 # params = parse_args(opt_parser)
 
 # # Set up test data
-out_dir = glue::glue("analysis/{date}_test_Orthogroups")
+out_dir = glue::glue("{date}_test_Orthogroups")
 
 params <- list( 
 
   elegans_annotated = "c_elegans/ce.fullpop/gene_markers.tsv",
   briggsae_annotated = "c_briggsae/cb.fullpop/gene_markers.tsv",
   tropicalis_annotated = "c_tropicalis/ct.fullpop/gene_markers.tsv",
+  OG_master = '../Caeno_Scan/input_data/all_species/orthogroups/20240206_Orthogroups/masterOrthoDB_wAlias.tsv',
   out_dir = out_dir 
   )
-
-### Uses annotated bim files from annotate_markers.R script ######
 
 # check if the directory exists, if not create it
 if (!dir.exists(params$out_dir)) {
@@ -43,19 +42,22 @@ if (!dir.exists(figure_dir)) {
 
 
 # #Read in orthogroups
-# OG <- readr::read_tsv('input_data/all_species/orthogroups/20240206_Orthogroups/masterOrthoDB.tsv') 
-# colnames(OG) <- c("Orthogroup", "Briggsae", "Tropicalis", "Elegans")
-# cpOG <- OG
-# OG <- mutate(OG, Gene_ID =paste(Briggsae, Tropicalis, Elegans)) %>% 
+OG <- readr::read_tsv(params$OG_master)
+colnames(OG) <- c("Orthogroup", 'WB_ID', 'WB_alias', 'seqname', "Elegans", "Briggsae", "Tropicalis")
+cpOG <- OG %>% 
+  select(Orthogroup, Elegans, Briggsae, Tropicalis) #%>%
+  #separate_rows(Gene_ID, sep = ",") %>%
+  #separate_rows(Gene_ID, sep = " ")
+# OG <- mutate(OG, Gene_ID =paste(Briggsae, Tropicalis, Elegans)) %>%
 #   select(-Briggsae) %>%
 #   select(-Tropicalis) %>%
-#   select(-Elegans) %>% 
-#   separate_rows(Gene_ID, sep = ",") %>% 
+#   select(-Elegans) %>%
+#   separate_rows(Gene_ID, sep = ",") %>%
 #   separate_rows(Gene_ID, sep = " ")
 # OG$Gene_ID <- sub("Transcript_", "", OG$Gene_ID)
-# OG$Gene_ID <- sub("transcript_", "", OG$Gene_ID) 
-# 
-# # function to add OGs 
+# OG$Gene_ID <- sub("transcript_", "", OG$Gene_ID)
+
+# # function to add OGs
 # add_OG <- function(abim, ortho) {
 #   # Join the two tables based on 'Gene_ID'
 #   merged_data <- left_join(abim, ortho, by = "Gene_ID")
@@ -63,7 +65,7 @@ if (!dir.exists(figure_dir)) {
 #   result <- merged_data %>%
 #     group_by(Gene_ID) %>%
 #     summarize(OG_list = list(unique(Orthogroup, na.rm = TRUE)))
-#   # Merge the summarized result back to the original 
+#   # Merge the summarized result back to the original
 #   final_data <- left_join(abim, result, by = "Gene_ID")
 #   return(merged_data)
 # }
@@ -105,13 +107,13 @@ cb_annotated <- readr::read_tsv(params$briggsae_annotated)
 ct_annotated <- readr::read_tsv(params$tropicalis_annotated)
 
 # Venn Diagram
-ce_one_one_one_var_ogs <- merge(one_one_one_og_var, ce_bim, by = "Orthogroup")  %>%
+ce_one_one_one_var_ogs <- merge(one_one_one_og_var, ce_annotated, by = "Orthogroup")  %>%
   pull(Orthogroup)
 
-cb_one_one_one_var_ogs <- merge(one_one_one_og_var, cb_bim, by = "Orthogroup") %>%
+cb_one_one_one_var_ogs <- merge(one_one_one_og_var, cb_annotated, by = "Orthogroup") %>%
   pull(Orthogroup)
 
-ct_one_one_one_var_ogs <- merge(one_one_one_og_var, ct_bim, by = "Orthogroup") %>%
+ct_one_one_one_var_ogs <- merge(one_one_one_og_var, ct_annotated, by = "Orthogroup") %>%
   pull(Orthogroup)
 
 venn.diagram(
