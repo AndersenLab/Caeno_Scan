@@ -109,12 +109,15 @@ ct_annotated <- readr::read_tsv(params$tropicalis_annotated)
 # Venn Diagram
 ce_one_one_one_var_ogs <- merge(one_one_one_og_var, ce_annotated, by = "Orthogroup")  %>%
   pull(Orthogroup)
+ce_one_one_one_filt <- merge(one_one_one_og_var, ce_annotated, by = "Orthogroup")
 
 cb_one_one_one_var_ogs <- merge(one_one_one_og_var, cb_annotated, by = "Orthogroup") %>%
   pull(Orthogroup)
+cb_one_one_one_filt <- merge(one_one_one_og_var, cb_annotated, by = "Orthogroup")
 
 ct_one_one_one_var_ogs <- merge(one_one_one_og_var, ct_annotated, by = "Orthogroup") %>%
   pull(Orthogroup)
+ct_one_one_one_filt <- merge(one_one_one_og_var, ct_annotated, by = "Orthogroup")
 
 venn.diagram(
   x = list(ce_one_one_one_var_ogs, cb_one_one_one_var_ogs, ct_one_one_one_var_ogs),
@@ -122,4 +125,67 @@ venn.diagram(
   filename = glue::glue("{figure_dir}/{date}_overlap_1_1_1_var_ogs.png"),
   output=TRUE,
   imagetype="png"
+)
+
+
+
+# average MAF for 1:1:1
+average_MAF_df <- function(df) {
+  # Group by gene_id and calculate the average MAF
+  avg_MAF_df <- df %>%
+    group_by(gene_id) %>%
+    summarize(average_MAF = mean(MAF, na.rm = TRUE))
+  
+  return(avg_MAF_df)
+}
+
+# using function
+ce_avgMAF <- average_MAF_df(ce_one_one_one_filt)
+cb_avgMAF <- average_MAF_df(cb_one_one_one_filt)
+ct_avgMAF <- average_MAF_df(ct_one_one_one_filt)
+
+# creating histogram with the average MAF
+ceMAF_hist<- ggplot(ce_avgMAF, aes(x = average_MAF)) + geom_histogram(fill = 'deeppink', color = "black") +
+  labs(title = "Histogram of Elegans MAF Averages",
+       x = "MAF Averages",
+       y = "Count")
+
+ggsave(
+  glue::glue("{figure_dir}/{date}.elegans_MAF.png"),
+  plot = ceMAF_hist,
+  device = "png",
+  width = 7.5,
+  height = 7.5,
+  units = "in",
+  dpi = 300
+)
+
+cbMAF_hist<- ggplot(cb_avgMAF, aes(x = average_MAF)) + geom_histogram(fill = 'deeppink', color = "black") +
+  labs(title = "Histogram of Briggsae MAF Averages",
+       x = "MAF Averages",
+       y = "Count")
+
+ggsave(
+  glue::glue("{figure_dir}/{date}.briggsae_MAF.png"),
+  plot = cbMAF_hist,
+  device = "png",
+  width = 7.5,
+  height = 7.5,
+  units = "in",
+  dpi = 300
+)
+
+ctMAF_hist<- ggplot(ct_avgMAF, aes(x = average_MAF)) + geom_histogram(fill = 'deeppink', color = "black") +
+  labs(title = "Histogram of Tropicalis MAF Averages",
+       x = "MAF Averages",
+       y = "Count")
+
+ggsave(
+  glue::glue("{figure_dir}/{date}.tropicalis_MAF.png"),
+  plot = ctMAF_hist,
+  device = "png",
+  width = 7.5,
+  height = 7.5,
+  units = "in",
+  dpi = 300
 )
