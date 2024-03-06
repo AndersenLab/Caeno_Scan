@@ -11,30 +11,20 @@ library(VennDiagram)
 #get date and time format as a variable YYYYMMDD_HHMM
 date <- format(Sys.time(), "%Y%m%d_%H%M")
 
-
-#Set up command line arguments
-option_list = list(
-  make_option(c("-e", "--ce_bim"),  type="character"),
-  make_option(c("-b", "--cb_bim"),  type="character"),
-  make_option(c("-t", "--ct_bim"),  type="character"),
-  make_option(c("-o", "--out_dir"),  type="character")
-)
-
-# Parse the arguments
-opt_parser = OptionParser(option_list=option_list, add_help_option=FALSE)
-params = parse_args(opt_parser)
-
+# # Parse the arguments
+# opt_parser = OptionParser(option_list=option_list, add_help_option=FALSE)
+# params = parse_args(opt_parser)
 
 # # Set up test data
+out_dir = glue::glue("analysis/{date}_test_Orthogroups")
 
-# out_dir = glue::glue("analysis/{date}_test_Orthogroups")
+params <- list( 
 
-# params <- list(
-#   ce_bim = "analysis/20240213_0631_OG_SNPs_test/proc_data/20240213_0631.filtered_all_elegans.tsv",
-#   cb_bim = "analysis/20240213_0631_OG_SNPs_test/proc_data/20240213_0631.filtered_all_briggsae.tsv",
-#   ct_bim = "analysis/20240213_0631_OG_SNPs_test/proc_data/20240213_0631.filtered_all_tropicalis.tsv",
-#   out_dir = out_dir
-# )
+  elegans_annotated = "c_elegans/ce.fullpop/gene_markers.tsv",
+  briggsae_annotated = "c_briggsae/cb.fullpop/gene_markers.tsv",
+  tropicalis_annotated = "c_tropicalis/ct.fullpop/gene_markers.tsv",
+  out_dir = out_dir 
+  )
 
 ### Uses annotated bim files from annotate_markers.R script ######
 
@@ -42,7 +32,6 @@ params = parse_args(opt_parser)
 if (!dir.exists(params$out_dir)) {
   dir.create(params$out_dir)
 }
-
 out_dir = params$out_dir
 
 figure_dir = glue::glue("{out_dir}/figures")
@@ -53,38 +42,31 @@ if (!dir.exists(figure_dir)) {
 }
 
 
-#Read in orthogroups
-OG <- readr::read_tsv('input_data/all_species/orthogroups/20240206_Orthogroups/masterOrthoDB.tsv') 
-colnames(OG) <- c("Orthogroup", "Briggsae", "Tropicalis", "Elegans")
-cpOG <- OG
-OG <- mutate(OG, Gene_ID =paste(Briggsae, Tropicalis, Elegans)) %>% 
-  select(-Briggsae) %>%
-  select(-Tropicalis) %>%
-  select(-Elegans) %>% 
-  separate_rows(Gene_ID, sep = ",") %>% 
-  separate_rows(Gene_ID, sep = " ")
-OG$Gene_ID <- sub("Transcript_", "", OG$Gene_ID)
-OG$Gene_ID <- sub("transcript_", "", OG$Gene_ID) 
-
-
-# function to add OGs 
-add_OG <- function(abim, ortho) {
-  
-  # Join the two tables based on 'Gene_ID'
-  merged_data <- left_join(abim, ortho, by = "Gene_ID")
-  
-  # Group by 'Gene_ID' and make 'OG_list' as a list of unique OG values
-  result <- merged_data %>%
-    group_by(Gene_ID) %>%
-    summarize(OG_list = list(unique(Orthogroup, na.rm = TRUE)))
-  
-  # Merge the summarized result back to the original 
-  final_data <- left_join(abim, result, by = "Gene_ID")
-  
-  return(merged_data)
-  
-}
-
+# #Read in orthogroups
+# OG <- readr::read_tsv('input_data/all_species/orthogroups/20240206_Orthogroups/masterOrthoDB.tsv') 
+# colnames(OG) <- c("Orthogroup", "Briggsae", "Tropicalis", "Elegans")
+# cpOG <- OG
+# OG <- mutate(OG, Gene_ID =paste(Briggsae, Tropicalis, Elegans)) %>% 
+#   select(-Briggsae) %>%
+#   select(-Tropicalis) %>%
+#   select(-Elegans) %>% 
+#   separate_rows(Gene_ID, sep = ",") %>% 
+#   separate_rows(Gene_ID, sep = " ")
+# OG$Gene_ID <- sub("Transcript_", "", OG$Gene_ID)
+# OG$Gene_ID <- sub("transcript_", "", OG$Gene_ID) 
+# 
+# # function to add OGs 
+# add_OG <- function(abim, ortho) {
+#   # Join the two tables based on 'Gene_ID'
+#   merged_data <- left_join(abim, ortho, by = "Gene_ID")
+#   # Group by 'Gene_ID' and make 'OG_list' as a list of unique OG values
+#   result <- merged_data %>%
+#     group_by(Gene_ID) %>%
+#     summarize(OG_list = list(unique(Orthogroup, na.rm = TRUE)))
+#   # Merge the summarized result back to the original 
+#   final_data <- left_join(abim, result, by = "Gene_ID")
+#   return(merged_data)
+# }
 # test function with elegans
 # OG_elegans <- add_OG(annotated_elegans, OG)
 # # test function with briggsae
@@ -115,12 +97,12 @@ cpOG$Ratio <- paste0(
 )
 
 OG_structure <- cpOG[, c("Orthogroup", "Ratio")]
-one_one_one_og_var <- subset(OG_structure, Ratio == "1:1:1") 
+one_one_one_og_var <- subset(OG_structure, Ratio == "1:1:1")
 
-# Load the annotated bim files
-ce_bim <- readr::read_tsv(params$ce_bim)
-cb_bim <- readr::read_tsv(params$cb_bim)
-ct_bim <- readr::read_tsv(params$ct_bim)
+# Load the annotated tsv files
+ce_annotated <- readr::read_tsv(params$elegans_annotated)
+cb_annotated <- readr::read_tsv(params$briggsae_annotated)
+ct_annotated <- readr::read_tsv(params$tropicalis_annotated)
 
 # Venn Diagram
 ce_one_one_one_var_ogs <- merge(one_one_one_og_var, ce_bim, by = "Orthogroup")  %>%
