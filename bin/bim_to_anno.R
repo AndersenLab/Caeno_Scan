@@ -1,6 +1,12 @@
 library(tidyverse)
+
+#parse command line arguments 
+args <- commandArgs(trailingOnly = TRUE)
+
+bim_file_path <- args[1]
+
 #Script to convert the bim file to a format it can be used to check overlaps with bedtools
-bim_file_path <- "proc_data/20240304_fullpopulation_simfiles_noLD_0.00/c_tropicalis/ct.fullpop/ct.fullpop_0.00.bim"
+#bim_file_path <- "proc_data/20240304_fullpopulation_simfiles_noLD_0.00/c_tropicalis/ct.fullpop/ct.fullpop_0.00.bim"
 
 bim_df <- data.table::fread(
     bim_file_path,

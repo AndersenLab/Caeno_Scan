@@ -382,5 +382,47 @@ Simulations
 
 
 # Multi-Species GWAS Simulations
+# Test populations
 
-### Test populations
+
+# Marker-set analysis 
+This section describes how marker sets are annotated with gene and orthogroup ID to perform an analysis of SNPs in gene and the average correlation between gene windows.
+## Required software 
+This workflow requires a version of `bedtools`
+
+## `prepare_sims.nf`
+The code contained in this NF script is used to generate a PLINK marker set for the sets of strains specified in the `pop_file` parameter.
+
+## `bim_to_anno.R`
+This script converts the `.bim` file into a `.bed` file that can be used with bedtool
+
+It take a single command line argument spcifiying the path to a `.bim` file
+
+```{bash}
+Rscript bin/bim_to_anno.R <path_to_bim>
+```
+It will output a `.bim.bed` file in the same directory as the input `.bim`
+
+## `annotate_snps.sh`
+This script performs a `bedtools intersect` command on the `bim.bed` file produced in `bim_to_anno.R` script and returns an annotated set of markers in the file specified by the 3rd command line argument
+
+Example usage:
+```{bash}
+bash bin/annotate_snps.sh $marker_bed $gff $out_file
+```
+The gff is the CSQ gff from `b1059/data/<sp_id>/genomes/csq` folder. It is copied locally into the `input_data/<sp_id>/annotations/<gff_file>
+
+The GFF file can be zipped or unzipped.
+
+## `parse_annotated_markers.R`
+This script takes the annotated list of markers and generates some relevant outputfiles. 
+
+It has several command line inputs:
+```{bash}
+Rscript bin/parse_annotated_markers.R <raw_markers>.bim \
+<annotated_markers>.bim.bed.annotated \
+<af_markers>.freq \
+<sp_id> \
+<out_dir>
+```
+
