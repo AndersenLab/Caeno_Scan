@@ -70,6 +70,7 @@ Channel.from(pop_file.collect { it.tokenize( ' ' ) })
     collect_eigen_variants_sims_repeated.out
         .combine(Channel.from(sim_key_file.collect { it.tokenize( ' ' ) }).map {SIMID, OGS -> [SIMID, OGS]})
         .combine(Channel.from(1..2)) // number of reps per OG trait
+        //TODO #3 update the sim_og_effects.py script 
         .combine(Channel.fromPath("${params.bin_dir}/sim_og_effects.py"))
         .combine(Channel.fromPath("${params.master_snp_dir}"))
         | simulate_orthogroup_effects

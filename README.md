@@ -382,6 +382,42 @@ Simulations
 
 
 # Multi-Species GWAS Simulations
+## Inputs
+### 1.1 Sim Key File
+This file is a tab-delimited file that contains the following columns: `sim_id` (unique identifier for each simulation) and `orthogroup`. The `orthogroup` column contains the orthogroup ID from which causal variants will be selected in all three species. 
+
+```{.tsv}
+sim_1 OG0006889
+sim_2 OG0008750
+sim_3 OG0006348
+sim_4 OG0011499
+sim_5 OG0004909
+```
+
+If multiple orthogroups are to have causal variants selected for a single simulation, the `orthogroup` column should contain a comma-separated list of orthogroup IDs. 
+
+```{.tsv}
+sim_6 OG0006889,OG0008750
+sim_7 OG0006348,OG0011499
+```
+
+** Currently the specified orthogroups must have at least one gene with a SNP in all three species **
+
+The pipeline can be broken into three distinct steps
+## 1. Prepare GWAS simulation files
+This portion of the pipeline will prepare the necessary files for the simulation of GWAS mappings in all three species.
+
+### 1.2 eigen decomposition
+This step will perform eigen decomposition on the genotype matrix for each mapping panel specified in the input file. 
+
+## 2. Simulate orthogroup effects & Map traits
+This portion of the pipeline will select casual variants within each orthogroup specified by the `sim_key_file` for each species
+### 2.1 Simulate orthogroup effects
+To simulate orthogroup effects the pipeline executes the script `bin/sim_og_effects.py`. It reads in a `.bim` file, adds orthogroup IDs to the SNPs (using a master_snps_dr) ** THIS IS DEPRECIATED and will be replaced by a process during the previous portion of the pipeline** 
+
+After attaching orthogroup IDs to the SNPs, the script select SNPS to be contributre to simulated phenotypic variation for each orthogroup specified in the `sim_key_file`. 
+
+## 3. Process the results
 # Test populations
 
 
