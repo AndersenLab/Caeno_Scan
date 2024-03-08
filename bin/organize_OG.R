@@ -189,3 +189,20 @@ ggsave(
   units = "in",
   dpi = 300
 )
+
+
+## getting simulation data frame
+# new data frame with 500 rows
+sim_df <- data.frame(
+  Label = paste0("sim_", 1:500),
+  Orthogroups = character(500),  # Initialize the column with empty strings
+  stringsAsFactors = FALSE
+)
+
+# Randomly select 5 orthogroups and list them comma-separated 
+set.seed(555) 
+for (i in 1:nrow(sim_df)) {
+  orthogroups <- sample(one_one_one_og_var$Orthogroup, 5)
+  sim_df$Orthogroups[i] <- paste(orthogroups, collapse = ", ")
+}
+
