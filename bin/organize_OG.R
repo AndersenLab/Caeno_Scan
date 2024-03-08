@@ -216,4 +216,6 @@ for (i in 1:nrow(sim_df)) {
   orthogroups <- sample(one_one_one_all$overlaps, 5)
   sim_df$Orthogroups[i] <- paste(orthogroups, collapse = ", ")
 }
+#save data frame
+data.table::fwrite(sim_df, glue::glue("{out_dir}/{date}.sim_withOG.tsv"))
 
