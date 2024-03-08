@@ -126,6 +126,17 @@ venn.diagram(
   output=TRUE,
   imagetype="png"
 )
+# getting the overlaps of all three
+# Convert the lists to vectors
+ce_vec <- unlist(ce_one_one_one_var_ogs)
+cb_vec <- unlist(cb_one_one_one_var_ogs)
+ct_vec <- unlist(ct_one_one_one_var_ogs)
+
+# Find the overlaps between the sets
+overlap_all <- intersect(intersect(ce_vec, cb_vec), ct_vec)
+
+# Create a new dataframe with the overlaps
+one_one_one_all <- data.frame(overlaps = overlap_all)
 
 
 
@@ -202,7 +213,7 @@ sim_df <- data.frame(
 # Randomly select 5 orthogroups and list them comma-separated 
 set.seed(555) 
 for (i in 1:nrow(sim_df)) {
-  orthogroups <- sample(one_one_one_og_var$Orthogroup, 5)
+  orthogroups <- sample(one_one_one_all$overlaps, 5)
   sim_df$Orthogroups[i] <- paste(orthogroups, collapse = ", ")
 }
 
