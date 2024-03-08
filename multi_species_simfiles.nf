@@ -54,6 +54,10 @@ Channel.from(pop_file.collect { it.tokenize( ' ' ) })
                     tuple[6]] // MAF
         } |  prepare_repeated_simulation_files
 
+    //TODO: Add annotation steps for the PLINK files
+
+    //TODO: Use only the selected SNPs to prepare the mapping data
+
     // eigen
     contigs = Channel.from(["1", "2", "3", "4", "5", "6"]) //Parallelize by chrom
     contigs.combine(prepare_repeated_simulation_files.out.sim_geno) // Combine with Plink files and Genotype matrix + Sim INFO
@@ -66,6 +70,8 @@ Channel.from(pop_file.collect { it.tokenize( ' ' ) })
     //Load the simulates key file 
     File sim_key_file = new File("test_data/repeated_sim_keys.txt") ;
     //create sim key channel
+
+    //TODO use the selected SNPs to select a causal variant for each orthogroup
 
     collect_eigen_variants_sims_repeated.out
         .combine(Channel.from(sim_key_file.collect { it.tokenize( ' ' ) }).map {SIMID, OGS -> [SIMID, OGS]})
