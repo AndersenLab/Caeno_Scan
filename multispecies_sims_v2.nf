@@ -38,8 +38,13 @@ ct_pop_id = "ct.fullpop"
 //     file("${params.proc_data}/${ce_pop_id}/selected_snps.txt") // the list of SNPs selected as gene based markers
 //     ]
 
-Channel.from( ["ce", "ceid"], ["cb","cbid"], ["ct", 'ctid'] ) \
-    | map { sp, strain_set -> [sp, strain_set, file("${params.proc_data}/${cb_pop_id}/${cb_pop_id}_0.00.bim.bed.annotated")] } \
+Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae","${cb_pop_id}"], ["c_tropicalis", "${ct_pop_id}"] ) \
+    | map { sp, strain_set -> [sp, \
+                                strain_set, \
+                                file("${params.proc_data}/${sp}/${strain_set}/${strain_set}_0.00.bim.bed.annotated"), \
+                                file("${params.proc_data}/${sp}/${strain_set}/renamed_chroms.vcf.gz"), \
+                                file("${params.proc_data}/${sp}/${strain_set}/renamed_chroms.vcf.gz.tbi") \
+                                ]} \
     | view()
 
 
@@ -83,7 +88,7 @@ sims = Channel.from(sim_key_file.collect { it.tokenize( ' ' ) }).map {SIMID, OGS
 sim_inputs = sims.combine(anno_snps)
 
 
-sim_inputs.view()
+//sim_inputs.view()
 
 //    ],
 //    ["c_briggsae",
