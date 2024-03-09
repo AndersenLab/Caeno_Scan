@@ -462,3 +462,9 @@ Rscript bin/parse_annotated_markers.R <raw_markers>.bim \
 <out_dir>
 ```
 
+# Multi-Species Sim Updates
+## 1. Inputs
+We are going to update the workflow to accepted a folder of prepared simulation files
+
+Test data needed
+[] - VCF files and indexes for each species
