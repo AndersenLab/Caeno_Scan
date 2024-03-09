@@ -19,14 +19,18 @@ include {} from './modules/repeated_simulations.nf'
 // load the population data from the input folder
 
 params.proc_data 
-ce_pop_id = params.ce_pop_id
-cb_pop_id = params.cb_pop_id
-ct_pop_id = params.ct_pop_id
+//ce_pop_id = params.ce_pop_id
+//cb_pop_id = params.cb_pop_id
+//ct_pop_id = params.ct_pop_id
+
+ce_pop_id = "ce.fullpop"
+cb_pop_id = "cb.fullpop"
+ct_pop_id = "ct.fullpop"
 
 // load the data to create genotype matrix
 pop_geno_inputs = [
     ["c_elegans",
-    ${ce_pop_id},
+    "${ce_pop_id}",
     file("${params.proc_data}/${ce_pop_id}/${ce_pop_id}_0.00.bim"), // the bim file containing all SNPs 
     file("${params.proc_data}/${ce_pop_id}/renamed_chroms.vcf.gz"), // the VCF file thats been filtered to only strains 
     file("${params.proc_data}/${ce_pop_id}/renamed_chroms.vcf.gz.tbi"), // the index file for the VCF
@@ -34,28 +38,46 @@ pop_geno_inputs = [
     ]
 ]
 
+
 // load the data to simulate phenotypes 
-sp_causal_snps_inputs = [
-    ["c_elegans",
-    ${ce_pop_id},
-    file("${params.proc_data}/${ce_pop_id}/${ce_pop_id}_0.00.bim.bed.annotated") // the list of SNPs in the population annotated with gene id and OG status
-    ],
-    ["c_briggsae",
-    ${cb_pop_id},
-    file("${params.proc_data}/${cb_pop_id}/${cb_pop_id}_0.00.bim.bed.annotated") // the list of SNPs in the population annotated with gene id and OG status
-    ]
-]
+// sp_causal_snps_inputs = [
+//     ["c_elegans",
+//     "${ce_pop_id}",
+//     file("${params.proc_data}/${ce_pop_id}/${ce_pop_id}_0.00.bim.bed.annotated") // the list of SNPs in the population annotated with gene id and OG status
+//     ],
+//     ["c_briggsae",
+//     "${cb_pop_id}",
+//     file("${params.proc_data}/${cb_pop_id}/${cb_pop_id}_0.00.bim.bed.annotated") // the list of SNPs in the population annotated with gene id and OG status
+//     ]
+// ]
+
+
+
+// create an input channel from the sp_causal_snps_inputs
+
+//sp_causal_snps_inputs = Channel.from(sp_causal_snps_inputs)
+
 //load the simulation key files
 File sim_key_file = new File("test_data/repeated_sim_keys.txt") ;
+
+ce_anno_snp = file("${params.proc_data}/${ce_pop_id}/${ce_pop_id}_0.00.bim.bed.annotated")
+cb_anno_snp = file("${params.proc_data}/${cb_pop_id}/${cb_pop_id}_0.00.bim.bed.annotated")
+ct_anno_snp = file("${params.proc_data}/${ct_pop_id}/${ct_pop_id}_0.00.bim.bed.annotated")
+
+anno_snps = [ce_anno_snp, cb_anno_snp, ct_anno_snp]
 
 // join the simulation data to the input file that specifies simulation ids and the orthogroups selected for each rep
 sims = Channel.from(sim_key_file.collect { it.tokenize( ' ' ) }).map {SIMID, OGS -> [SIMID, OGS]}
 
-// for each species in the sp_causl_snps_inputs combine with the sims channel
-// to create a channel of inputs for the repeated_simulations module
-sim_inputs = sp_causal_snps_inputs.collectMany { species, pop_id, snp_file ->
-    sims.map { SIMID, OGS -> [species, pop_id, snp_file, SIMID, OGS] }
-}
+//sims.view()
+
+//ce_causal_snps =["c_elegans", "${ce_pop_id}", file("${params.proc_data}/${ce_pop_id}/${ce_pop_id}_0.00.bim.bed.annotated")]
+
+//sim_inputs = sims.map {SIMID, OGS -> [SIMID, OGS, ce_causal_snps]}
+
+// create a new input tuple that includes the simulation id, the orthogroups, and the causal snps
+sim_inputs = sims.combine(anno_snps)
+
 
 sim_inputs.view()
 
