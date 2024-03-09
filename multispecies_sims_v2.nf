@@ -28,15 +28,19 @@ cb_pop_id = "cb.fullpop"
 ct_pop_id = "ct.fullpop"
 
 // load the data to create genotype matrix
-pop_geno_inputs = [
-    ["c_elegans",
-    "${ce_pop_id}",
-    file("${params.proc_data}/${ce_pop_id}/${ce_pop_id}_0.00.bim"), // the bim file containing all SNPs 
-    file("${params.proc_data}/${ce_pop_id}/renamed_chroms.vcf.gz"), // the VCF file thats been filtered to only strains 
-    file("${params.proc_data}/${ce_pop_id}/renamed_chroms.vcf.gz.tbi"), // the index file for the VCF
-    file("${params.proc_data}/${ce_pop_id}/selected_snps.txt") // the list of SNPs selected as gene based markers
-    ]
-]
+
+
+// ce_geno = ["c_elegans",
+//     "${ce_pop_id}",
+//     file("${params.proc_data}/${ce_pop_id}/${ce_pop_id}_0.00.bim"), // the bim file containing all SNPs 
+//     file("${params.proc_data}/${ce_pop_id}/renamed_chroms.vcf.gz"), // the VCF file thats been filtered to only strains 
+//     file("${params.proc_data}/${ce_pop_id}/renamed_chroms.vcf.gz.tbi"), // the index file for the VCF
+//     file("${params.proc_data}/${ce_pop_id}/selected_snps.txt") // the list of SNPs selected as gene based markers
+//     ]
+
+Channel.from( ["ce", "ceid"], ["cb","cbid"], ["ct", 'ctid'] ) \
+    | map { sp, strain_set -> [sp, strain_set, file("${params.proc_data}/${cb_pop_id}/${cb_pop_id}_0.00.bim.bed.annotated")] } \
+    | view()
 
 
 // load the data to simulate phenotypes 
