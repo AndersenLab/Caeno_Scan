@@ -72,15 +72,14 @@ process simulate_orthogroup_effects {
 
 
     input:
-        tuple val(sp), val(strain_set), val(strains), file(bed), file(bim), file(fam), file(map), file(nosex), file(ped), file(log), file(gm), val(MAF), file(n_indep_tests), val(SIMID), val(OGS), val(SIMREP), file(create_causal_qtls), file(master_snps_dir)
+        tuple val(OGS), val(SIMREP), val(sp), val(strain_set), file(bim), file(create_causal_qtls)
 
     output:
-        tuple val(sp), val(strain_set), file(bed), file(bim), file(fam), file(map), file(nosex), file(ped), file(log), file(gm), val(SIMREP), val(MAF), file(n_indep_tests), val(SIMID), val(OGS), file("${sp}_${strain_set}_${MAF}_${SIMID}_${SIMREP}_causal_og_vars.txt"), emit: pheno_inputs
-        //tuple val(sp), val(strain_set), val(strains), file(bed), file(bim), file(fam), file(map), file(nosex), file(ped), file(log), file(gm), val(MAF), file(n_indep_tests), val(SIMID), val(OGS), val(SIMREP), file(master_snps_dir), file("${sp}_${strain_set}_${MAF}_${SIMID}_${SIMREP}_causal_og_vars.txt")
+        tuple val(sp), val(strain_set), file("${sp}_${strain_set}_${MAF}_${SIMID}_${SIMREP}_causal_og_vars.txt")
 
 
     """
-        python ${create_causal_qtls} ${OGS} ${bim} ${master_snps_dir} ${sp}
+        python ${create_causal_qtls} ${OGS} ${bim} ${sp}
         cat causal_og_vars.txt > ${sp}_${strain_set}_${MAF}_${SIMID}_${SIMREP}_causal_og_vars.txt
     """
 }
