@@ -3,18 +3,21 @@ process prepare_sim_gm  {
     
     
     memory 5.GB
-    container = 'andersenlab/nemascan:20220407173056db3227'
+    //container = 'biocontainers/bcftools:v1.9-1-deb_cv1'
+    //container = 'andersenlab/nemascan:20220407173056db3227'
+    ///Users/ryanmckeown/anaconda3/envs/gm_matrix_test
     executor 'local'
 
     //memory params.eigen_mem
     publishDir "${params.out}/${sp}/${strain_set}/Markers", mode: 'copy', pattern: "*Genotype_Matrix.tsv"  
+    publishDir "${params.out}/${sp}/${strain_set}/Markers", mode: 'copy', pattern: "*.vcf.gz"  
 
 
     input:
         tuple val(sp), val(strain_set), file(vcf), file(vcf_index), file(selected_snps)
 
     output:
-        tuple val(sp), val(strain_set), file("${sp}_${strain_set}_Genotype_Matrix.tsv")
+        tuple val(sp), val(strain_set), file(vcf), file("${sp}_${strain_set}_Genotype_Matrix.tsv")
 
 
     """
