@@ -59,6 +59,8 @@ ct_pop_id = "ct.fullpop"
 //     | prepare_sim_gm
 
 //input channel for GM with one species for testing
+
+workflow{
 prep_gm_ins = Channel.from( ["c_elegans", "${ce_pop_id}"]) \
     | map { sp, strain_set -> [sp, \
                                 strain_set, \
@@ -67,7 +69,7 @@ prep_gm_ins = Channel.from( ["c_elegans", "${ce_pop_id}"]) \
                                 file("${params.proc_data}/${sp}/${strain_set}/selected_snps.txt") \
                                 ]} \
     | prepare_sim_gm
-
+}
 // load the data to simulate phenotypes 
 // sp_causal_snps_inputs = [
 //     ["c_elegans",
