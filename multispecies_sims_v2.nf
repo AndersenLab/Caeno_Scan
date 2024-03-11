@@ -6,9 +6,8 @@ if( !nextflow.version.matches('>20.0') ) {
 }
 
 nextflow.enable.dsl=2
-
-params.out = "Analysis_Results-${date}"
 date = new Date().format( 'yyyyMMdd' )
+params.out = "Analysis_Results-${date}"
 
 
 params.bin_dir = "${workflow.projectDir}/bin" // this is different for gcp
