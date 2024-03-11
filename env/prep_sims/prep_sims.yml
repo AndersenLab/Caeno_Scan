@@ -1,0 +1,10 @@
+name: nemascan
+channels:
+  - defaults
+  - bioconda
+  - r
+  - biobuilds
+  - conda-forge
+dependencies:
+  - bcftools=1.9
+  - plink=1.90b6.12
