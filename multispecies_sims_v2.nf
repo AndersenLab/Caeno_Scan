@@ -89,16 +89,16 @@ prep_gm_ins = Channel.from( ["c_elegans", "${ce_pop_id}"]) \
 //sp_causal_snps_inputs = Channel.from(sp_causal_snps_inputs)
 
 //load the simulation key files
-File sim_key_file = new File("test_data/repeated_sim_keys.txt") ;
+//File sim_key_file = new File("test_data/repeated_sim_keys.txt") ;
 
-ce_anno_snp = file("${params.proc_data}/${ce_pop_id}/${ce_pop_id}_0.00.bim.bed.annotated")
-cb_anno_snp = file("${params.proc_data}/${cb_pop_id}/${cb_pop_id}_0.00.bim.bed.annotated")
-ct_anno_snp = file("${params.proc_data}/${ct_pop_id}/${ct_pop_id}_0.00.bim.bed.annotated")
+//ce_anno_snp = file("${params.proc_data}/${ce_pop_id}/${ce_pop_id}_0.00.bim.bed.annotated")
+//cb_anno_snp = file("${params.proc_data}/${cb_pop_id}/${cb_pop_id}_0.00.bim.bed.annotated")
+//ct_anno_snp = file("${params.proc_data}/${ct_pop_id}/${ct_pop_id}_0.00.bim.bed.annotated")
 
-anno_snps = [ce_anno_snp, cb_anno_snp, ct_anno_snp]
+//anno_snps = [ce_anno_snp, cb_anno_snp, ct_anno_snp]
 
 // join the simulation data to the input file that specifies simulation ids and the orthogroups selected for each rep
-sims = Channel.from(sim_key_file.collect { it.tokenize( ' ' ) }).map {SIMID, OGS -> [SIMID, OGS]}
+//sims = Channel.from(sim_key_file.collect { it.tokenize( ' ' ) }).map {SIMID, OGS -> [SIMID, OGS]}
 
 //sims.view()
 
@@ -107,7 +107,7 @@ sims = Channel.from(sim_key_file.collect { it.tokenize( ' ' ) }).map {SIMID, OGS
 //sim_inputs = sims.map {SIMID, OGS -> [SIMID, OGS, ce_causal_snps]}
 
 // create a new input tuple that includes the simulation id, the orthogroups, and the causal snps
-sim_inputs = sims.combine(anno_snps)
+//sim_inputs = sims.combine(anno_snps)
 
 
 //sim_inputs.view()
