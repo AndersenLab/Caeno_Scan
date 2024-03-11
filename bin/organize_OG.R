@@ -156,7 +156,8 @@ cb_avgMAF <- average_MAF_df(cb_one_one_one_filt)
 ct_avgMAF <- average_MAF_df(ct_one_one_one_filt)
 
 # creating histogram with the average MAF
-ceMAF_hist<- ggplot(ce_avgMAF, aes(x = average_MAF)) + geom_histogram(fill = 'deeppink', color = "black") +
+ceMAF_hist<- ggplot(ce_avgMAF, aes(x = average_MAF)) + geom_histogram(color = "black") +
+  theme(axis.text=element_text(size=14), axis.title=element_text(size=16,face="bold"), title =element_text(size=18, face='bold')) +
   labs(title = "Histogram of Elegans MAF Averages",
        x = "MAF Averages",
        y = "Count")
@@ -171,7 +172,8 @@ ggsave(
   dpi = 300
 )
 
-cbMAF_hist<- ggplot(cb_avgMAF, aes(x = average_MAF)) + geom_histogram(fill = 'deeppink', color = "black") +
+cbMAF_hist<- ggplot(cb_avgMAF, aes(x = average_MAF)) + geom_histogram(color = "black") +
+  theme(axis.text=element_text(size=14), axis.title=element_text(size=16,face="bold"), title =element_text(size=18, face='bold')) +
   labs(title = "Histogram of Briggsae MAF Averages",
        x = "MAF Averages",
        y = "Count")
@@ -186,10 +188,11 @@ ggsave(
   dpi = 300
 )
 
-ctMAF_hist<- ggplot(ct_avgMAF, aes(x = average_MAF)) + geom_histogram(fill = 'deeppink', color = "black") +
+ctMAF_hist<- ggplot(ct_avgMAF, aes(x = average_MAF)) + geom_histogram(color = "black") +
+  theme(axis.text=element_text(size=14), axis.title=element_text(size=16,face="bold"), title =element_text(size=18, face='bold')) +
   labs(title = "Histogram of Tropicalis MAF Averages",
        x = "MAF Averages",
-       y = "Count")
+       y = "Count",)
 
 ggsave(
   glue::glue("{figure_dir}/{date}.tropicalis_MAF.png"),
@@ -201,6 +204,35 @@ ggsave(
   dpi = 300
 )
 
+# all MAFs in one
+# Combine data for all species
+ce_avgMAF$species <- "Elegans"
+cb_avgMAF$species <- "Briggsae"
+ct_avgMAF$species <- "Tropicalis"
+
+all_data <- bind_rows(ce_avgMAF, cb_avgMAF, ct_avgMAF)
+
+# Create histogram and save it
+ceMAF_hist <- ggplot(all_data, aes(x = average_MAF, fill = species)) +
+  geom_histogram(color = "black", position = "identity", alpha = 0.7, bins = 30) +
+  theme(axis.text = element_text(size = 14),
+        axis.title = element_text(size = 16, face = "bold"),
+        title = element_text(size = 18, face = 'bold')) +
+  labs(title = "Histogram of MAF Averages by Species",
+       x = "MAF Averages",
+       y = "Count") +
+  facet_grid(. ~ species) +
+  scale_fill_manual(values = c("Elegans" = "lightblue", "Briggsae" = "pink", "Tropicalis" = "darkgrey"))
+
+ggsave(
+  glue::glue("{figure_dir}/{date}.all_species_MAF.png"),
+  plot = ceMAF_hist,
+  device = "png",
+  width = 15,
+  height = 9,
+  units = "in",
+  dpi = 300
+)
 
 ## getting simulation data frame
 # new data frame with 500 rows
