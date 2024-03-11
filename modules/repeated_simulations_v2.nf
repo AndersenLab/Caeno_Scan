@@ -1,23 +1,25 @@
-process prepare_genomatrix  {
+process prepare_sim_gm  {
 
-    tag { CHROM }
-
-    cpus 6
-    time '5m'
+    
+    
     memory 5.GB
     container = 'andersenlab/nemascan:20220407173056db3227'
+    executor 'local'
 
     //memory params.eigen_mem
+    publishDir "${params.out}/${sp}/${strain_set}/Markers", mode: 'copy', pattern: "*Genotype_Matrix.tsv"  
+
 
     input:
-        tuple val(sp), val(strain_set), file(bim), file(vcf), file(index), file(selected_snps)
+        tuple val(sp), val(strain_set), file(vcf), file(vcf_index), file(selected_snps)
 
     output:
         tuple val(sp), val(strain_set), file("${sp}_${strain_set}_Genotype_Matrix.tsv")
 
 
     """
-    bcftools query --print-header -f '%CHROM\\t%POS\\t%REF\\t%ALT[\\t%GT]\\n' ${vcf} |\\
+    bcftools view -S ${selected_snps} -Ou ${vcf} |\\
+    bcftools query --print-header -f '%CHROM\\t%POS\\t%REF\\t%ALT[\\t%GT]\\n' |\\
     sed 's/[[# 0-9]*]//g' |\\
     sed 's/:GT//g' |\\
     sed 's/0|0/-1/g' |\\
@@ -35,6 +37,42 @@ process prepare_genomatrix  {
 
 }
 
+process prepare_sim_plink {
+    cpus 6
+    time '5m'
+    memory 5.GB
+    container = 'andersenlab/nemascan:20220407173056db3227'
+    executor 'local'
+
+    //memory params.eigen_mem
+
+    input:
+        tuple val(sp), val(strain_set), file(vcf), file(vcf_index), file(selected_snps)
+
+    output:
+        tuple val(sp), val(strain_set), file("${sp}_${strain_set}_Genotype_Matrix.tsv")
+
+
+    """
+    bcftools view -S ${selected_snps} -Ou ${vcf} |\\
+    bcftools query --print-header -f '%CHROM\\t%POS\\t%REF\\t%ALT[\\t%GT]\\n' |\\
+    sed 's/[[# 0-9]*]//g' |\\
+    sed 's/:GT//g' |\\
+    sed 's/0|0/-1/g' |\\
+    sed 's/1|1/1/g' |\\
+    sed 's/0|1/NA/g' |\\
+    sed 's/1|0/NA/g' |\\
+    sed 's/.|./NA/g'  |\\
+    sed 's/0\\/0/-1/g' |\\
+    sed 's/1\\/1/1/g'  |\\
+    sed 's/0\\/1/NA/g' |\\
+    sed 's/1\\/0/NA/g' |\\
+    sed 's/.\\/./NA/g' > ${sp}_${strain_set}_Genotype_Matrix.tsv
+
+    """
+
+
+}
 
 process chrom_eigen_variants_sims_repeated  {
 

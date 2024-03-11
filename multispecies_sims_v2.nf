@@ -14,7 +14,7 @@ params.ci_size = 150
 sthresh= "BF"
 params.maf = 0.05
 
-include {} from './modules/repeated_simulations.nf'
+include {prepare_sim_gm} from './modules/repeated_simulations_v2.nf'
 
 // load the population data from the input folder
 
@@ -38,15 +38,35 @@ ct_pop_id = "ct.fullpop"
 //     file("${params.proc_data}/${ce_pop_id}/selected_snps.txt") // the list of SNPs selected as gene based markers
 //     ]
 
-Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae","${cb_pop_id}"], ["c_tropicalis", "${ct_pop_id}"] ) \
+
+// Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae","${cb_pop_id}"], ["c_tropicalis", "${ct_pop_id}"] ) \
+//     | map { sp, strain_set -> [sp, \
+//                                 strain_set, \
+//                                 file("${params.proc_data}/${sp}/${strain_set}/${strain_set}_0.00.bim.bed.annotated"), \
+//                                 file("${params.proc_data}/${sp}/${strain_set}/renamed_chroms.vcf.gz"), \
+//                                 file("${params.proc_data}/${sp}/${strain_set}/renamed_chroms.vcf.gz.tbi") \
+//                                 ]} \
+//     | view()
+
+//input channels for GM with all species
+// prep_gm_ins = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae","${cb_pop_id}"], ["c_tropicalis", "${ct_pop_id}"] ) \
+//     | map { sp, strain_set -> [sp, \
+//                                 strain_set, \
+//                                 file("${params.proc_data}/${sp}/${strain_set}/renamed_chroms.vcf.gz"), \
+//                                 file("${params.proc_data}/${sp}/${strain_set}/renamed_chroms.vcf.gz.tbi"), \
+//                                 file("${params.proc_data}/${sp}/${strain_set}/selected_snps.txt") \
+//                                 ]} \
+//     | prepare_sim_gm
+
+//input channel for GM with one species for testing
+prep_gm_ins = Channel.from( ["c_elegans", "${ce_pop_id}"]) \
     | map { sp, strain_set -> [sp, \
                                 strain_set, \
-                                file("${params.proc_data}/${sp}/${strain_set}/${strain_set}_0.00.bim.bed.annotated"), \
-                                file("${params.proc_data}/${sp}/${strain_set}/renamed_chroms.vcf.gz"), \
-                                file("${params.proc_data}/${sp}/${strain_set}/renamed_chroms.vcf.gz.tbi") \
+                                file("input_data/c_elegans/genotypes/c_elegans.test.vcf.gz"), \
+                                file("input_data/c_elegans/genotypes/c_elegans.test.vcf.gz.tbi"), \
+                                file("${params.proc_data}/${sp}/${strain_set}/selected_snps.txt") \
                                 ]} \
-    | view()
-
+    | prepare_sim_gm
 
 // load the data to simulate phenotypes 
 // sp_causal_snps_inputs = [
