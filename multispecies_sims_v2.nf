@@ -17,7 +17,7 @@ params.ci_size = 150
 sthresh= "BF"
 params.maf = 0.05
 
-include {prepare_sim_gm} from './modules/repeated_simulations_v2.nf'
+include {prepare_sim_gm; chrom_eigen_variants_sims_repeated} from './modules/repeated_simulations_v2.nf'
 
 // load the population data from the input folder
 
