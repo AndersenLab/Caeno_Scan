@@ -14,10 +14,10 @@ process prepare_sim_gm  {
 
 
     input:
-        tuple val(sp), val(strain_set), file(vcf), file(vcf_index), file(selected_snps)
+        tuple val(sp), val(strain_set), path(vcf), path(vcf_index), path(selected_snps)
 
     output:
-        tuple val(sp), val(strain_set), file(vcf), file("${sp}_${strain_set}_Genotype_Matrix.tsv")
+        tuple val(sp), val(strain_set), path(vcf), path("${sp}_${strain_set}_Genotype_Matrix.tsv")
 
 
     """

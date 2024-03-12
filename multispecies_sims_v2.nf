@@ -67,9 +67,9 @@ workflow{
 prep_gm_ins = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae", "${cb_pop_id}"] ) \
     .map { sp, strain_set -> [sp, \
                                 strain_set, \
-                                path("/projects/b1059/projects/Ryan/ortholog_sims/pipeline_dev/Caeno_Scan/input_data/test_gm/${sp}/${sp}.vcf.gz"), \
-                                path("/projects/b1059/projects/Ryan/ortholog_sims/pipeline_dev/Caeno_Scan/input_data/test_gm/${sp}/${sp}.vcf.gz.tbi"), \
-                                path("/projects/b1059/projects/Ryan/ortholog_sims/pipeline_dev/Caeno_Scan/input_data/test_gm/${sp}/${sp}_all_snps.txt") \
+                                Channel.fromPath("/projects/b1059/projects/Ryan/ortholog_sims/pipeline_dev/Caeno_Scan/input_data/test_gm/${sp}/${sp}.vcf.gz"), \
+                                Channel.fromPath("/projects/b1059/projects/Ryan/ortholog_sims/pipeline_dev/Caeno_Scan/input_data/test_gm/${sp}/${sp}.vcf.gz.tbi"), \
+                                Channel.fromPath("/projects/b1059/projects/Ryan/ortholog_sims/pipeline_dev/Caeno_Scan/input_data/test_gm/${sp}/${sp}_all_snps.txt") \
                                 ]} \
     | prepare_sim_gm
 }
