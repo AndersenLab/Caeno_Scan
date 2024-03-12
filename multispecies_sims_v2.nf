@@ -17,7 +17,7 @@ params.ci_size = 150
 sthresh= "BF"
 params.maf = 0.05
 
-include {prepare_sim_gm; prepare_sim_plink; chrom_eigen_variants_sims_repeated} from './modules/repeated_simulations_v2.nf'
+include {prepare_sim_gm; prepare_sim_plink; chrom_eigen_variants_sims_repeated; collect_chrom_eigen_variants_sims_repeated} from './modules/repeated_simulations_v2.nf'
 
 // load the population data from the input folder
 
@@ -74,23 +74,25 @@ prep_gm_ins = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae", "${cb_
     // create a tuple
     .map { sp, strain_set, vcf, vcf_tbi, snp_list -> [sp, strain_set, vcf, vcf_tbi, snp_list]} 
     
-    prepare_sim_plink(prep_gm_ins)
+    //prepare_sim_plink(prep_gm_ins)
     
     prepare_sim_gm(prep_gm_ins)
     
     // combine the plink files and the genotype matrix generated with the selected SNPs usisng sp and strain set ids
-    pop_sim_marker_files = prepare_sim_plink.out.join(prepare_sim_gm.out, by:[0,1])
+    //pop_sim_marker_files = prepare_sim_plink.out.join(prepare_sim_gm.out, by:[0,1])
     
-    pop_sim_marker_files.view()
+    //pop_sim_marker_files.view()
     
     // eigen
-    //contigs = Channel.from("1")
-    //contigs = Channel.from(["1", "2", "3", "4", "5", "6"]) //Parallelize by chrom
-    //contigs.combine(prepare_sim_gm.out) // Combine with Plink files and Genotype matrix + Sim INFO
-    //    .combine(Channel.fromPath("bin/Get_GenoMatrix_Eigen.R")) | chrom_eigen_variants_sims_repeated
+    contigs = Channel.from("1")
+    contigs = Channel.from(["1", "2", "3", "4", "5", "6"]) //Parallelize by chrom
+    contigs.combine(prepare_sim_gm.out) // Combine with Plink files and Genotype matrix + Sim INFO
+        .combine(Channel.fromPath("bin/Get_GenoMatrix_Eigen.R")) | chrom_eigen_variants_sims_repeated
     
-
-
+    // collect chrom eigen results
+    chrom_eigen_variants_sims_repeated.out
+        .groupTuple(by:[0,1]) // Group by species and strain set
+        | collect_chrom_eigen_variants_sims_repeated
 }
 // load the data to simulate phenotypes 
 // sp_causal_snps_inputs = [

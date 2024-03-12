@@ -101,6 +101,38 @@ process chrom_eigen_variants_sims_repeated  {
     """
 
 }
+/*
+------------ Sum independent tests for all chromosomes
+*/
+
+process collect_eigen_variants_sims_repeated {
+
+    //executor 'local'
+
+    //publishDir "${params.out}/Genotype_Matrix", mode: 'copy'
+    publishDir "${params.out}/${sp}/${strain_set}/Markers/eigendecomp", mode: 'copy', pattern: "*_total_independent_tests.txt"  
+    container = 'andersenlab/nemascan:20220407173056db3227'
+    cpus 1
+    time '5m'
+    memory 5.GB
+
+
+
+    input:
+        tuple val(sp), val(strain_set), file(tests)
+
+
+    output:
+        tuple val(sp), val(strain_set), file("${sp}_${strain_set}_total_independent_tests.txt")
+
+    """
+        cat *independent_snvs.csv |\\
+        grep -v inde |\\
+        awk '{s+=\$1}END{print s}' > ${sp}_${strain_set}_total_independent_tests.txt
+    """
+
+}
+
 
 process simulate_orthogroup_effects {
     label 'causal_ogs'
