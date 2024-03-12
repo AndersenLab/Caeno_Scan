@@ -64,12 +64,12 @@ ct_pop_id = "ct.fullpop"
 //input channel for GM with one species for testing
 
 workflow{
-prep_gm_ins = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_tropicalis", "${ct_pop_id}"] ) \
+prep_gm_ins = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae", "${cb_pop_id}"] ) \
     | map { sp, strain_set -> [sp, \
                                 strain_set, \
-                                file("input_data/${sp}/genotypes/${sp}.test.vcf.gz"), \
-                                file("input_data/${sp}/genotypes/${sp}.test.vcf.gz.tbi"), \
-                                file("${params.proc_data}/${sp}/${strain_set}/selected_snps.txt") \
+                                file("input_data/test_gm/${sp}/${sp}.vcf.gz"), \
+                                file("input_data/test_gm/${sp}/${sp}.vcf.gz.tbi"), \
+                                file("input_data/test_gm/${sp}/${sp}_all_snps.txt") \
                                 ]} \
     | prepare_sim_gm
 }
