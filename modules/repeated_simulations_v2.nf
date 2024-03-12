@@ -107,7 +107,7 @@ process chrom_eigen_variants_sims_repeated  {
 
 process collect_eigen_variants_sims_repeated {
 
-    //executor 'local'
+    executor 'local'
 
     //publishDir "${params.out}/Genotype_Matrix", mode: 'copy'
     publishDir "${params.out}/${sp}/${strain_set}/Markers/eigendecomp", mode: 'copy', pattern: "*_total_independent_tests.txt"  
