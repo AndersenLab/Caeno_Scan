@@ -53,25 +53,20 @@ process prepare_sim_plink {
         tuple val(sp), val(strain_set), file(vcf), file(vcf_index), file(selected_snps)
 
     output:
-        tuple val(sp), val(strain_set), file("${sp}_${strain_set}_Genotype_Matrix.tsv")
+        tuple val(sp), val(strain_set), file("TO_SIMS.bed"), file("TO_SIMS.bim"), file("TO_SIMS.fam"), file("TO_SIMS.map"), file("TO_SIMS.nosex"), file("TO_SIMS.ped"), file("TO_SIMS.log")
 
 
     """
-    bcftools view -S ${selected_snps} -Ou ${vcf} |\\
-    bcftools query --print-header -f '%CHROM\\t%POS\\t%REF\\t%ALT[\\t%GT]\\n' |\\
-    sed 's/[[# 0-9]*]//g' |\\
-    sed 's/:GT//g' |\\
-    sed 's/0|0/-1/g' |\\
-    sed 's/1|1/1/g' |\\
-    sed 's/0|1/NA/g' |\\
-    sed 's/1|0/NA/g' |\\
-    sed 's/.|./NA/g'  |\\
-    sed 's/0\\/0/-1/g' |\\
-    sed 's/1\\/1/1/g'  |\\
-    sed 's/0\\/1/NA/g' |\\
-    sed 's/1\\/0/NA/g' |\\
-    sed 's/.\\/./NA/g' > ${sp}_${strain_set}_Genotype_Matrix.tsv
-
+    bcftools view -T ${selected_snps} -Oz ${vcf} -o renamed_chroms.vcf.gz 
+    tabix -p vcf renamed_chroms.vcf.gz
+    plink --vcf renamed_chroms.vcf.gz \\
+    --make-bed \\
+    --snps-only \\
+    --biallelic-only \\
+    --geno \\
+    --recode \\
+    --out TO_SIMS \\
+    --allow-extra-chr
     """
 
 
