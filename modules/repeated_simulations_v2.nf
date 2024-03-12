@@ -46,8 +46,8 @@ process prepare_sim_plink {
     memory 5.GB
     container = 'andersenlab/nemascan:20220407173056db3227'
     executor 'local'
-
-    //memory params.eigen_mem
+    
+    publishDir "${params.out}/${sp}/${strain_set}/Markers", mode: 'copy', pattern: "*bim"  
 
     input:
         tuple val(sp), val(strain_set), file(vcf), file(vcf_index), file(selected_snps)

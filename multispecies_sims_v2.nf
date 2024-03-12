@@ -17,7 +17,7 @@ params.ci_size = 150
 sthresh= "BF"
 params.maf = 0.05
 
-include {prepare_sim_gm; chrom_eigen_variants_sims_repeated} from './modules/repeated_simulations_v2.nf'
+include {prepare_sim_gm; prepare_sim_pilnk; chrom_eigen_variants_sims_repeated} from './modules/repeated_simulations_v2.nf'
 
 // load the population data from the input folder
 
@@ -72,14 +72,15 @@ prep_gm_ins = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae", "${cb_
                                 "/projects/b1059/projects/Ryan/ortholog_sims/pipeline_dev/Caeno_Scan/test_data/test_gm/${sp}/${sp}_all_snps.txt" \
                                 ]} \
     // create a tuple
-    .map { sp, strain_set, vcf, vcf_tbi, snp_list -> [sp, strain_set, vcf, vcf_tbi, snp_list]} \
-    | prepare_sim_gm
+    .map { sp, strain_set, vcf, vcf_tbi, snp_list -> [sp, strain_set, vcf, vcf_tbi, snp_list]} 
+    
+    prepare_sim_plink(prep_gm_ins)
 
     // eigen
-    contigs = Channel.from("1")
+    //contigs = Channel.from("1")
     //contigs = Channel.from(["1", "2", "3", "4", "5", "6"]) //Parallelize by chrom
-    contigs.combine(prepare_sim_gm.out) // Combine with Plink files and Genotype matrix + Sim INFO
-        .combine(Channel.fromPath("bin/Get_GenoMatrix_Eigen.R")) | chrom_eigen_variants_sims_repeated
+    //contigs.combine(prepare_sim_gm.out) // Combine with Plink files and Genotype matrix + Sim INFO
+    //    .combine(Channel.fromPath("bin/Get_GenoMatrix_Eigen.R")) | chrom_eigen_variants_sims_repeated
     
 
 
