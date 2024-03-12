@@ -72,8 +72,11 @@ prep_gm_ins = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae", "${cb_
                                 "/projects/b1059/projects/Ryan/ortholog_sims/pipeline_dev/Caeno_Scan/test_data/test_gm/${sp}/${sp}_all_snps.txt" \
                                 ]} \
     // create a tuple
-    .map { sp, strain_set, vcf, vcf_tbi, snp_list -> [sp, strain_set, vcf, vcf_tbi, snp_list]} \
-    | prepare_sim_plink
+    .map { sp, strain_set, vcf, vcf_tbi, snp_list -> [sp, strain_set, vcf, vcf_tbi, snp_list]} 
+    
+    prepare_sim_plink(prep_gm_ins)
+    
+    prepare_sim_gm(prep_gm_ins)
     
     // eigen
     //contigs = Channel.from("1")
