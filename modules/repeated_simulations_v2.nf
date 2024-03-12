@@ -10,7 +10,7 @@ process prepare_sim_gm  {
 
     //memory params.eigen_mem
     publishDir "${params.out}/${sp}/${strain_set}/Markers", mode: 'copy', pattern: "*Genotype_Matrix.tsv"  
-    publishDir "${params.out}/${sp}/${strain_set}/Markers", mode: 'copy', pattern: "*.vcf.gz"  
+    //publishDir "${params.out}/${sp}/${strain_set}/Markers", mode: 'copy', pattern: "*.vcf.gz"  
 
 
     input:
