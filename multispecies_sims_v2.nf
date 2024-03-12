@@ -67,9 +67,9 @@ workflow{
 prep_gm_ins = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae", "${cb_pop_id}"] ) \
     .map { sp, strain_set -> [sp, \
                                 strain_set, \
-                                "/projects/b1059/projects/Ryan/ortholog_sims/pipeline_dev/Caeno_Scan/input_data/test_gm/${sp}/${sp}.vcf.gz", \
-                                "/projects/b1059/projects/Ryan/ortholog_sims/pipeline_dev/Caeno_Scan/input_data/test_gm/${sp}/${sp}.vcf.gz.tbi", \
-                                "/projects/b1059/projects/Ryan/ortholog_sims/pipeline_dev/Caeno_Scan/input_data/test_gm/${sp}/${sp}_all_snps.txt" \
+                                "/projects/b1059/projects/Ryan/ortholog_sims/pipeline_dev/Caeno_Scan/test_data/test_gm/${sp}/${sp}.vcf.gz", \
+                                "/projects/b1059/projects/Ryan/ortholog_sims/pipeline_dev/Caeno_Scan/test_data/test_gm/${sp}/${sp}.vcf.gz.tbi", \
+                                "/projects/b1059/projects/Ryan/ortholog_sims/pipeline_dev/Caeno_Scan/test_data/test_gm/${sp}/${sp}_all_snps.txt" \
                                 ]} \
     // create a tuple
     .map { sp, strain_set, vcf, vcf_tbi, snp_list -> [sp, strain_set, path(vcf), path(vcf_tbi), path(snp_list)]} \
