@@ -21,7 +21,7 @@ process prepare_sim_gm  {
 
 
     """
-    bcftools view -t ${selected_snps} -Ou ${vcf} |\\
+    bcftools view -T ${selected_snps} -Ou ${vcf} |\\
     bcftools query --print-header -f '%CHROM\\t%POS\\t%REF\\t%ALT[\\t%GT]\\n' |\\
     sed 's/[[# 0-9]*]//g' |\\
     sed 's/:GT//g' |\\
