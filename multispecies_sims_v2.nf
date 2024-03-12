@@ -74,6 +74,14 @@ prep_gm_ins = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae", "${cb_
     // create a tuple
     .map { sp, strain_set, vcf, vcf_tbi, snp_list -> [sp, strain_set, vcf, vcf_tbi, snp_list]} \
     | prepare_sim_gm
+
+    // eigen
+    contigs = Channel.from(["1", "2", "3", "4", "5", "6"]) //Parallelize by chrom
+    contigs.combine(prepare_sim_gm) // Combine with Plink files and Genotype matrix + Sim INFO
+        .combine(Channel.fromPath("bin/Get_GenoMatrix_Eigen.R")) | chrom_eigen_variants_sims_repeated
+    
+
+
 }
 // load the data to simulate phenotypes 
 // sp_causal_snps_inputs = [
