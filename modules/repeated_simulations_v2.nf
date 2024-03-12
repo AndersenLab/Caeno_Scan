@@ -57,7 +57,7 @@ process prepare_sim_plink {
 
 
     """
-    bcftools view -T ${selected_snps} -Oz ${vcf} -o renamed_chroms.vcf.gz 
+    bcftools view -T ${selected_snps} -Oz -o renamed_chroms.vcf.gz ${vcf}
     tabix -p vcf renamed_chroms.vcf.gz
     plink --vcf renamed_chroms.vcf.gz \\
     --make-bed \\
