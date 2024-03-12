@@ -84,6 +84,7 @@ process chrom_eigen_variants_sims_repeated  {
     cpus 6
     time '5m'
     memory 5.GB
+    executor 'local'
     container = 'andersenlab/nemascan:20220407173056db3227'
 
     //memory params.eigen_mem
