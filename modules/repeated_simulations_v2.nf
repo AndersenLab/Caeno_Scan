@@ -87,6 +87,7 @@ process chrom_eigen_variants_sims_repeated  {
     container = 'andersenlab/nemascan:20220407173056db3227'
 
     //memory params.eigen_mem
+    publishDir "${params.out}/${sp}/${strain_set}/Markers/eigendecomp", mode: 'copy', pattern: "*_independent_snvs.csv"  
 
     input:
         tuple val(CHROM), val(sp), val(strain_set), file(gm), file(get_genomatrix_eigen)
