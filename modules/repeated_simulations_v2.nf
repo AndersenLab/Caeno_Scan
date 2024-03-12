@@ -41,7 +41,7 @@ process prepare_sim_gm  {
 }
 
 process prepare_sim_plink {
-    cpus 6
+    cpus 3
     time '5m'
     memory 5.GB
     container = 'andersenlab/nemascan:20220407173056db3227'
