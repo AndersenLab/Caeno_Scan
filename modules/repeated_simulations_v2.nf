@@ -89,18 +89,17 @@ process chrom_eigen_variants_sims_repeated  {
     //memory params.eigen_mem
 
     input:
-        tuple val(CHROM), val(sp), val(strain_set), val(strains), file(bed), file(bim), file(fam), file(map), file(sex), file(ped), file(log), file(geno), val(MAF), file(get_genomatrix_eigen)
+        tuple val(CHROM), val(sp), val(strain_set), file(gm), file(get_genomatrix_eigen)
 
     output:
-        tuple val(sp), val(strain_set), val(strains), val(MAF), file(bed), file(bim), file(fam), file(map), file(sex), file(ped), file(log), file(geno), emit: sim_geno_meta
-        tuple val(sp), val(strain_set), val(strains), val(MAF), file("${CHROM}_${sp}_${strain_set}_${MAF}_independent_snvs.csv"), emit: sim_geno_eigen_join
+        tuple val(sp), val(strain_set), file("${CHROM}_${sp}_${strain_set}_independent_snvs.csv")
 
 
     """
         cat ${geno} |\\
         awk -v chrom="${CHROM}" '{if(\$1 == "CHROM" || \$1 == chrom) print}' > ${CHROM}_gm.tsv
         Rscript --vanilla ${get_genomatrix_eigen} ${CHROM}_gm.tsv ${CHROM}
-        mv ${CHROM}_independent_snvs.csv ${CHROM}_${sp}_${strain_set}_${MAF}_independent_snvs.csv
+        mv ${CHROM}_independent_snvs.csv ${CHROM}_${sp}_${strain_set}_independent_snvs.csv
     """
 
 }
