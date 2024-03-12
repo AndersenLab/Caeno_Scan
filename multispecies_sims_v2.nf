@@ -79,9 +79,9 @@ prep_gm_ins = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae", "${cb_
     prepare_sim_gm(prep_gm_ins)
     
     // combine the plink files and the genotype matrix generated with the selected SNPs usisng sp and strain set ids
-    pop_sim_files = prepare_sim_plink.out.join(prepare_sim_gm.out, by:[0,1])
+    pop_sim_marker_files = prepare_sim_plink.out.join(prepare_sim_gm.out, by:[0,1])
     
-    pop_sim_files.view()
+    pop_sim_marker_files.view()
     
     // eigen
     //contigs = Channel.from("1")
