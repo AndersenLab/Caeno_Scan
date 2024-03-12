@@ -81,7 +81,7 @@ process chrom_eigen_variants_sims_repeated  {
 
     tag { CHROM }
 
-    cpus 6
+    cpus 3
     time '5m'
     memory 5.GB
     executor 'local'
