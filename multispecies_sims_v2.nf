@@ -76,7 +76,8 @@ prep_gm_ins = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae", "${cb_
     | prepare_sim_gm
 
     // eigen
-    contigs = Channel.from(["1", "2", "3", "4", "5", "6"]) //Parallelize by chrom
+    contigs = Channel.from("1")
+    //contigs = Channel.from(["1", "2", "3", "4", "5", "6"]) //Parallelize by chrom
     contigs.combine(prepare_sim_gm.out) // Combine with Plink files and Genotype matrix + Sim INFO
         .combine(Channel.fromPath("bin/Get_GenoMatrix_Eigen.R")) | chrom_eigen_variants_sims_repeated
     
