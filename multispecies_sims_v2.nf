@@ -17,7 +17,7 @@ params.ci_size = 150
 sthresh= "BF"
 params.maf = 0.05
 
-include {prepare_sim_gm; prepare_sim_plink; chrom_eigen_variants_sims_repeated; collect_chrom_eigen_variants_sims_repeated} from './modules/repeated_simulations_v2.nf'
+include {prepare_sim_gm; prepare_sim_plink; chrom_eigen_variants_sims_repeated; collect_eigen_variants_sims_repeated} from './modules/repeated_simulations_v2.nf'
 
 // load the population data from the input folder
 
@@ -92,7 +92,7 @@ prep_gm_ins = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae", "${cb_
     // collect chrom eigen results
     chrom_eigen_variants_sims_repeated.out
         .groupTuple(by:[0,1]) // Group by species and strain set
-        | collect_chrom_eigen_variants_sims_repeated
+        | collect_eigen_variants_sims_repeated
 }
 // load the data to simulate phenotypes 
 // sp_causal_snps_inputs = [
