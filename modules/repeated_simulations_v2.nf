@@ -121,3 +121,126 @@ process simulate_orthogroup_effects {
         cat causal_og_vars.txt > ${sp}_${strain_set}_${MAF}_${SIMID}_${SIMREP}_causal_og_vars.txt
     """
 }
+
+process simulate_map_phenotypes {
+
+    label 'sim_map_phenos'
+    tag {"${SIMREP} - ${H2} - ${MAF}"}
+
+    errorStrategy 'retry'
+    container = 'andersenlab/nemascan:20220407173056db3227'
+    publishDir "${params.out}/Simulations/${sp}/${SIMID}/Mappings", pattern: "*fastGWA", overwrite: true
+    publishDir "${params.out}/Simulations/${sp}/${SIMID}/Mappings", pattern: "*loco.mlma", overwrite: true
+    publishDir "${params.out}/Simulations/${sp}/${SIMID}/Phenotypes", pattern: "*.phen", overwrite: true
+    publishDir "${params.out}/Simulations/${sp}/${SIMID}/Phenotypes", pattern: "*.par", overwrite: true
+
+    cpus 5
+    time '20m'
+    memory 10.GB
+
+
+
+    input:
+        tuple val(sp), val(strain_set), file(bed), file(bim), file(fam), file(map), file(nosex), file(ped), file(log), file(gm), file(n_indep_tests), val(SIMID), file(loci), val(H2), file(check_vp)
+
+    output:
+        tuple file("TO_SIMS_${SIMREP}_${MAF}_${SIMID}_${sp}_${strain_set}.bed"), file("TO_SIMS_${SIMREP}_${MAF}_${SIMID}_${sp}_${strain_set}.bim"), file("TO_SIMS_${SIMREP}_${MAF}_${SIMID}_${sp}_${strain_set}.fam"), file("TO_SIMS_${SIMREP}_${MAF}_${SIMID}_${sp}_${strain_set}.map"), file("TO_SIMS_${SIMREP}_${MAF}_${SIMID}_${sp}_${strain_set}.nosex"), file("TO_SIMS_${SIMREP}_${MAF}_${SIMID}_${sp}_${strain_set}.ped"), file("TO_SIMS_${SIMREP}_${MAF}_${SIMID}_${sp}_${strain_set}.log"), val(SIMREP), file(loci), file("${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sims.phen"), file("${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sims.par"), emit: sim_phen_output
+        tuple file("${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_lmm-exact_inbred.fastGWA"), file("${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_lmm-exact.loco.mlma"), file("${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_lmm-exact.log"), file("${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_lmm-exact_inbred.log"), emit: sim_GCTA_mapping_results
+        
+        path "${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_lmm-exact_inbred.fastGWA", emit: lmm_exact_inbred_analyze_sims
+        path "${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_lmm-exact_inbred_pca.fastGWA", emit: lmm_exact_inbred_pca_analyze_sims
+        path "${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_lmm-exact.loco.mlma", emit: lmm_exact_loco_analyze_sims
+        path "${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_lmm-exact_pca.loco.mlma", emit: lmm_exact_loco_pca_analyze_sims
+        path "${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sims.phen", emit: simphen_analyze_sims
+        path "${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sims.par", emit: simgen_analyze_sims
+        tuple val(sp), val(strain_set), val(SIMREP), val(H2), file(loci), file(gm), file(n_indep_tests), val(MAF),val(SIMID), val(OGS), file("${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_lmm-exact_inbred.fastGWA"), file("${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_lmm-exact_inbred_pca.fastGWA"),file("${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_lmm-exact.loco.mlma"), file("${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_lmm-exact_pca.loco.mlma"), file("${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sims.phen"), file("${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sims.par"),emit: gcta_intervals
+
+    """
+    gcta64 --bfile TO_SIMS \\
+         --simu-qt \\
+         --simu-causal-loci ${loci} \\
+         --simu-hsq ${H2} \\
+         --simu-rep 1 \\
+         --thread-num 5 \\
+         --out ${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sims
+    plink --bfile TO_SIMS \\
+        --make-bed \\
+        --snps-only \\
+        --biallelic-only \\
+        --maf ${MAF} \\
+        --set-missing-var-ids @:# \\
+        --geno \\
+        --recode \\
+        --out TO_SIMS_${SIMREP}_${MAF}_${SIMID}_${sp}_${strain_set} \\
+        --allow-extra-chr \\
+        --pheno ${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sims.phen
+    gcta64 --bfile TO_SIMS_${SIMREP}_${MAF}_${SIMID}_${sp}_${strain_set} \\
+            --autosome --maf ${MAF} --make-grm \\
+            --out TO_SIMS_${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_gcta_grm \\
+            --thread-num 5
+    gcta64 --bfile TO_SIMS_${SIMREP}_${MAF}_${SIMID}_${sp}_${strain_set} \\
+            --autosome --maf ${MAF} --make-grm-inbred \\
+            --out TO_SIMS_${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_gcta_grm_inbred \\
+            --thread-num 5
+    gcta64 --grm TO_SIMS_${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_gcta_grm_inbred \\
+            --pheno ${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sims.phen \\
+            --reml --out check_vp \\
+            --thread-num 5
+    
+    python ${check_vp} --check_vp check_vp.hsq --simulated_phenos ${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sims.phen 
+
+    if [[ -f "new_phenos.temp" ]]
+    then
+        rm ${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sims.phen
+        mv new_phenos.temp ${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sims.phen
+    fi
+
+    gcta64 --grm TO_SIMS_${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_gcta_grm \\
+           --make-bK-sparse ${params.sparse_cut} \\
+           --out ${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sparse_grm \\
+           --thread-num 5
+    gcta64 --grm TO_SIMS_${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_gcta_grm \\
+           --pca 1 \\
+           --out ${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sparse_grm \\
+           --thread-num 5
+    gcta64 --mlma-loco \\
+           --bfile TO_SIMS_${SIMREP}_${MAF}_${SIMID}_${sp}_${strain_set} \\
+           --grm ${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sparse_grm \\
+           --out ${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_lmm-exact \\
+           --pheno ${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sims.phen \\
+           --maf ${MAF} \\
+           --thread-num 5
+    gcta64 --mlma-loco \\
+           --bfile TO_SIMS_${SIMREP}_${MAF}_${SIMID}_${sp}_${strain_set} \\
+           --grm ${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sparse_grm \\
+           --qcovar ${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sparse_grm.eigenvec \\
+           --out ${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_lmm-exact_pca \\
+           --pheno ${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sims.phen \\
+           --maf ${MAF} \\
+           --thread-num 5
+
+    gcta64 --grm TO_SIMS_${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_gcta_grm_inbred \\
+          --make-bK-sparse ${params.sparse_cut} \\
+          --out ${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sparse_grm_inbred \\
+          --thread-num 5
+    gcta64 --grm TO_SIMS_${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_gcta_grm_inbred \\
+          --pca 1 \\
+          --out ${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sparse_grm_inbred \\
+          --thread-num 5
+    gcta64 --fastGWA-lmm-exact \\
+          --grm-sparse ${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sparse_grm_inbred \\
+          --bfile TO_SIMS_${SIMREP}_${MAF}_${SIMID}_${sp}_${strain_set} \\
+          --out ${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_lmm-exact_inbred \\
+          --pheno ${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sims.phen \\
+          --maf ${MAF} \\
+          --thread-num 5
+    gcta64 --fastGWA-lmm-exact \\
+          --grm-sparse ${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sparse_grm_inbred \\
+          --qcovar ${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sparse_grm_inbred.eigenvec \\
+          --bfile TO_SIMS_${SIMREP}_${MAF}_${SIMID}_${sp}_${strain_set} \\
+          --out ${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_lmm-exact_inbred_pca \\
+          --pheno ${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sims.phen \\
+          --maf ${MAF} \\
+          --thread-num 5
+    """
+}
