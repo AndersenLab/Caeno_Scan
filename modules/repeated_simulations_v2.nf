@@ -41,19 +41,20 @@ process prepare_sim_gm  {
 }
 
 process prepare_sim_plink {
+    
     cpus 3
     time '5m'
     memory 5.GB
     container = 'andersenlab/nemascan:20220407173056db3227'
     executor 'local'
     
-    publishDir "${params.out}/${sp}/${strain_set}/Markers", mode: 'copy', pattern: "*bim"  
+    publishDir "${params.out}/${sp}/${strain_set}/Markers", mode: 'copy', pattern: "*bim"
 
     input:
-        tuple val(sp), val(strain_set), file(vcf), file(vcf_index), file(selected_snps)
+        tuple val(sp), val(strain_set), path(vcf), path(vcf_index), path(selected_snps)
 
     output:
-        tuple val(sp), val(strain_set), file("TO_SIMS.bed"), file("TO_SIMS.bim"), file("TO_SIMS.fam"), file("TO_SIMS.map"), file("TO_SIMS.nosex"), file("TO_SIMS.ped"), file("TO_SIMS.log")
+        tuple val(sp), val(strain_set), path("TO_SIMS.bed"), path("TO_SIMS.bim"), path("TO_SIMS.fam"), path("TO_SIMS.map"), path("TO_SIMS.nosex"), path("TO_SIMS.ped"), path("TO_SIMS.log")
 
 
     """

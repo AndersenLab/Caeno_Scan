@@ -74,6 +74,7 @@ prep_gm_ins = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae", "${cb_
     // create a tuple
     .map { sp, strain_set, vcf, vcf_tbi, snp_list -> [sp, strain_set, vcf, vcf_tbi, snp_list]} \
     | prepare_sim_plink
+    
     // eigen
     //contigs = Channel.from("1")
     //contigs = Channel.from(["1", "2", "3", "4", "5", "6"]) //Parallelize by chrom
