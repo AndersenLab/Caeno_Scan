@@ -17,7 +17,7 @@ process prepare_sim_gm  {
         tuple val(sp), val(strain_set), path(vcf), path(vcf_index), path(selected_snps)
 
     output:
-        tuple val(sp), val(strain_set), path(vcf), path("${sp}_${strain_set}_Genotype_Matrix.tsv")
+        tuple val(sp), val(strain_set), path("${sp}_${strain_set}_Genotype_Matrix.tsv")
 
 
     """
@@ -97,7 +97,7 @@ process chrom_eigen_variants_sims_repeated  {
 
 
     """
-        cat ${geno} |\\
+        cat ${gm} |\\
         awk -v chrom="${CHROM}" '{if(\$1 == "CHROM" || \$1 == chrom) print}' > ${CHROM}_gm.tsv
         Rscript --vanilla ${get_genomatrix_eigen} ${CHROM}_gm.tsv ${CHROM}
         mv ${CHROM}_independent_snvs.csv ${CHROM}_${sp}_${strain_set}_independent_snvs.csv
