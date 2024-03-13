@@ -133,8 +133,8 @@ process simulate_orthogroup_effects {
     label 'causal_ogs'
     //errorStrategy 'ignore'
     executor 'local'
-    //conda '/home/rjm6024/.conda/envs/vcf_stats_1.0'
-    conda  '/Users/ryanmckeown/anaconda3/envs/dev_env'
+    conda '/home/rjm6024/.conda/envs/vcf_stats_1.0'
+    //conda  '/Users/ryanmckeown/anaconda3/envs/dev_env'
 
     publishDir "${params.out}/Simulations/${SIMREP}/causal_vars", pattern: "*txt", overwrite: true
 
@@ -154,7 +154,7 @@ process simulate_orthogroup_effects {
 process_sim_phenos {
     label 'sim_map_phenos'
     
-
+    executor 'local'
     //errorStrategy 'retry'
     container = 'andersenlab/nemascan:20220407173056db3227'
     //publishDir "${params.out}/Simulations/${sp}/${SIMID}/Mappings", pattern: "*fastGWA", overwrite: true
