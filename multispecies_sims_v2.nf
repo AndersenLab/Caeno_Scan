@@ -116,7 +116,7 @@ prep_gm_ins = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae", "${cb_
     //                                 file("${params.proc_data}/${sp}/${strain_set}/${strain_set}_0.00.bim.bed.annotated") \
     //                                 ]} \
     //     .map { sp, strain_set, snp_file -> [sp, strain_set, snp_file] } 
-    snps_pool = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae","${cb_pop_id}"], ["c_tropicalis", "${ct_pop_id}"] ) \
+    snps_pool = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae","${cb_pop_id}"]) \
         .map { sp, strain_set -> [sp, \
                                     strain_set, \
                                     "${workflow.projectDir}/test_data/select_og_cv/20240306_Orthogroup_Analysis/${sp}/${strain_set}/gene_markers.tsv" \
