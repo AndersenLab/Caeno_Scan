@@ -115,11 +115,11 @@ process collect_eigen_variants_sims_repeated {
 
 
     input:
-        tuple val(sp), val(strain_set), file(tests)
+        tuple val(sp), val(strain_set), path(tests)
 
 
     output:
-        tuple val(sp), val(strain_set), file("${sp}_${strain_set}_total_independent_tests.txt")
+        tuple val(sp), val(strain_set), path("${sp}_${strain_set}_total_independent_tests.txt")
 
     """
         cat *independent_snvs.csv |\\
