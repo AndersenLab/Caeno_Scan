@@ -45,4 +45,5 @@ test_data/c_tropicalis/ct.comp.map/ct.comp.map_0.05.frq
 *.gff3.gz
 .DS_Store
 .DS_Store
-test_data/select_og_cv/20240306_Selected_SNPs_MAF/*
+test_data/selected_markers/20240306_Selected_SNPs_MAF/*
+test_data/select_og_cv/ct.fullpop_0.00.bim.bed.annotated.gene_markers.tsv
