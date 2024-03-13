@@ -17,7 +17,7 @@ params.ci_size = 150
 sthresh= "BF"
 params.maf = 0.05
 
-include {prepare_sim_gm; prepare_sim_plink; chrom_eigen_variants_sims_repeated} from './modules/repeated_simulations_v2.nf'
+include {prepare_sim_gm; prepare_sim_plink; chrom_eigen_variants_sims_repeated; simulate_orthogroup_effects} from './modules/repeated_simulations_v2.nf'
 
 // load the population data from the input folder
 
@@ -101,7 +101,24 @@ og_cv_script = Channel.fromPath("${params.bin_dir}/sim_og_effects.py")
     
     sim_params = Channel.from(sim_key_file.collect { it.tokenize( ' ' ) })
                     .map {SIMID, OGS -> [SIMID, OGS]}
-    sim_params.view()
+    //sim_params.view()
+
+    // loading all SNPs in genes for each population
+    // snps_pool = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae","${cb_pop_id}"], ["c_tropicalis", "${ct_pop_id}"] ) \
+    //     .map { sp, strain_set -> [sp, \
+    //                                 strain_set, \
+    //                                 file("${params.proc_data}/${sp}/${strain_set}/${strain_set}_0.00.bim.bed.annotated") \
+    //                                 ]} \
+    //     .map { sp, strain_set, snp_file -> [sp, strain_set, snp_file] } 
+    snps_pool = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae","${cb_pop_id}"], ["c_tropicalis", "${ct_pop_id}"] ) \
+        .map { sp, strain_set -> [sp, \
+                                    strain_set, \
+                                    "${workflow.projectDir}/test_data/select_og_cv/20240306_Orthogroup_Analysis/${sp}/${strain_set}/gene_markers.tsv" \
+                                    ]} 
+        .map { sp, strain_set, snp_file -> [sp, strain_set, snp_file] }
+        .combine(Channel.fromPath("${params.bin_dir}/sim_og_effects.py"))
+        .combine(sim_params)
+    snps_pool.view()
 
 }
 // load the data to simulate phenotypes 
