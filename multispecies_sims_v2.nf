@@ -94,6 +94,14 @@ prep_gm_ins = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae", "${cb_
     //    .combine(Channel.fromPath("bin/Get_GenoMatrix_Eigen.R")) | chrom_eigen_variants_sims_repeated
     
 
+    // Simulation parameter channels
+    File sim_key_file = new File("test_data/repeated_sim_keys.txt") ;
+
+    sim_ids_ogs = Channel.fromPath("test_data/repeated_sim_keys.txt")
+    
+    sim_params = Channel.from(sim_key_file.collect { it.tokenize( ' ' ) })
+                    .map {SIMID, OGS -> [SIMID, OGS]}
+
 
 }
 // load the data to simulate phenotypes 
