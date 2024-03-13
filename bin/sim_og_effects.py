@@ -100,22 +100,22 @@ def simulate_og_effect_gamma(og_variants, n_var, og_effect_shape = 0.4, og_effec
 if __name__ == "__main__":
 
     #Define orthogroups from command line argument where the orthogroups are separated by commas
-    #sim_ogs = sys.argv[1].split(",")
-    sim_ogs = "OG0008648,OG0000678".split(",")
+    sim_ogs = sys.argv[1].split(",")
+    # sim_ogs = "OG0008648,OG0000678".split(",")
 
     #get the number of orthogroups
     n_ogs = len(sim_ogs)
 
     #Get the list of variants in the strain sets - from the .bim file
-    #strain_set_variant_file = sys.argv[2]
-    strain_set_variant_file = "test_data/select_og_cv/ct.fullpop_0.00.bim.bed.annotated.gene_markers.tsv"
+    strain_set_variant_file = sys.argv[2]
+    # strain_set_variant_file = "test_data/select_og_cv/ct.fullpop_0.00.bim.bed.annotated.gene_markers.tsv"
 
     #Get the directory of the master snps files
     #master_snps_dir = sys.argv[3]
 
     #Define the species
-    #sp = sys.argv[4]
-    sp = "c_tropicalis"
+    sp = sys.argv[3]
+    # sp = "c_tropicalis"
 
     #og1 = "OG0010644"
     #og1 = "OG0010836"
