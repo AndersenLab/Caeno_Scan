@@ -118,7 +118,8 @@ og_cv_script = Channel.fromPath("${params.bin_dir}/sim_og_effects.py")
         .map { sp, strain_set, snp_file -> [sp, strain_set, snp_file] }
         .combine(Channel.fromPath("${params.bin_dir}/sim_og_effects.py"))
         .combine(sim_params)
-    snps_pool.view()
+        | simulate_orthogroup_effects
+    //snps_pool.view()
 
 }
 // load the data to simulate phenotypes 
