@@ -17,7 +17,7 @@ params.ci_size = 150
 sthresh= "BF"
 params.maf = 0.05
 
-include {prepare_sim_gm; prepare_sim_plink; chrom_eigen_variants_sims_repeated; simulate_orthogroup_effects} from './modules/repeated_simulations_v2.nf'
+include {prepare_sim_gm; prepare_sim_plink; chrom_eigen_variants_sims_repeated; collect_eigen_variants_sims_repeated; simulate_orthogroup_effects} from './modules/repeated_simulations_v2.nf'
 
 // load the population data from the input folder
 
@@ -90,7 +90,9 @@ prep_gm_ins = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae", "${cb_
     //contigs = Channel.from(["1", "2", "3", "4", "5", "6"]) //Parallelize by chrom
     //contigs.combine(prepare_sim_gm.out) // Combine with Plink files and Genotype matrix + Sim INFO
     //    .combine(Channel.fromPath("bin/Get_GenoMatrix_Eigen.R")) | chrom_eigen_variants_sims_repeated
-    
+    chrom_eigen_variants_sims_repeated.out
+    .groupTuple(by:[0,1]) // Group by species and strain set
+    | collect_eigen_variants_sims_repeated
     // pop_sim_marker_files = prepare_sim_plink.out
     //     .join(prepare_sim_gm.out, by:[0,1])
     //     .join(chrom_eigen_variants_sims_repeated.out, by:[0,1])
