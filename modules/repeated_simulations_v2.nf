@@ -104,21 +104,21 @@ process chrom_eigen_variants_sims_repeated  {
 
 process simulate_orthogroup_effects {
     label 'causal_ogs'
-    errorStrategy 'ignore'
+    //errorStrategy 'ignore'
     executor 'local'
-    conda '/home/rjm6024/.conda/envs/vcf_stats_1.0'
+    //conda '/home/rjm6024/.conda/envs/vcf_stats_1.0'
 
 
     input:
-        tuple val(OGS), val(SIMREP), val(sp), val(strain_set), file(bim), file(create_causal_qtls)
+        tuple val(OGS), val(SIMREP), val(sp), val(strain_set), path(all_pop_snps_anno_bim), path(create_causal_qtls)
 
     output:
-        tuple val(sp), val(strain_set), file("${sp}_${strain_set}_${MAF}_${SIMID}_${SIMREP}_causal_og_vars.txt")
+        tuple val(sp), val(strain_set), val(SIMREP), path("${sp}_${strain_set}_${MAF}_${SIMID}_${SIMREP}_causal_og_vars.txt")
 
 
     """
-        python ${create_causal_qtls} ${OGS} ${bim} ${sp}
-        cat causal_og_vars.txt > ${sp}_${strain_set}_${MAF}_${SIMID}_${SIMREP}_causal_og_vars.txt
+        python ${create_causal_qtls} ${all_pop_snps_anno_bim} ${sp}
+        cat causal_og_vars.txt > ${sp}_${strain_set}_${SIMREP}_causal_og_vars.txt
     """
 }
 
