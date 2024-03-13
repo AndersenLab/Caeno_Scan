@@ -43,3 +43,5 @@ test_data/c_tropicalis/ct.comp.map/ct.comp.map_0.05.frq
 *.strain-annotation.tsv
 *.gff3
 *.gff3.gz
+.DS_Store
+.DS_Store
