@@ -119,7 +119,7 @@ process simulate_orthogroup_effects {
 
 
     """
-        python ${create_causal_qtls} ${all_pop_snps_anno_bim} ${sp}
+        python ${create_causal_qtls} ${OGS} ${all_pop_snps_anno_bim} ${sp}
         cat causal_og_vars.txt > ${sp}_${strain_set}_${SIMREP}_causal_og_vars.txt
     """
 }
