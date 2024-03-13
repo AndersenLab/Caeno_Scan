@@ -125,9 +125,14 @@ prep_gm_ins = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae", "${cb_
     //snps_pool.view()
     simulate_orthogroup_effects(snps_pool)
 
+    // create an input channel for the specified trait H2s
+    trait_h2 = Channel.fromPath("${workflow.projectDir}/test_data/h2.csv").splitCsv()
+
     // combine the output of the sumulation data to the
     prep_gm_ins
         .combine(simulate_orthogroup_effects.out, by:[0,1])
+        .combine(trait_h2)
+        .combine(Channel.fromPath("${params.bin_dir}/check_vp.py"))
         .view()
 }
 // load the data to simulate phenotypes 
