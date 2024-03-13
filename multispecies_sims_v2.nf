@@ -68,24 +68,22 @@ workflow{
 // define the script to select causal vars
 og_cv_script = Channel.fromPath("${params.bin_dir}/sim_og_effects.py")
 
-// prep_gm_ins = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae", "${cb_pop_id}"] ) \
-//     .map { sp, strain_set -> [sp, \
-//                                 strain_set, \
-//                                 "/projects/b1059/projects/Ryan/ortholog_sims/pipeline_dev/Caeno_Scan/test_data/test_gm/${sp}/${sp}.vcf.gz", \
-//                                 "/projects/b1059/projects/Ryan/ortholog_sims/pipeline_dev/Caeno_Scan/test_data/test_gm/${sp}/${sp}.vcf.gz.tbi", \
-//                                 "/projects/b1059/projects/Ryan/ortholog_sims/pipeline_dev/Caeno_Scan/test_data/test_gm/${sp}/${sp}_all_snps.txt" \
-//                                 ]} \
-//     // create a tuple
-//     .map { sp, strain_set, vcf, vcf_tbi, snp_list -> [sp, strain_set, vcf, vcf_tbi, snp_list]} 
+prep_gm_ins = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae", "${cb_pop_id}"] ) \
+    .map { sp, strain_set -> [sp, \
+                                strain_set, \
+                                "/projects/b1059/projects/Ryan/ortholog_sims/pipeline_dev/Caeno_Scan/test_data/test_gm/${sp}/${sp}.vcf.gz", \
+                                "/projects/b1059/projects/Ryan/ortholog_sims/pipeline_dev/Caeno_Scan/test_data/test_gm/${sp}/${sp}.vcf.gz.tbi", \
+                                "/projects/b1059/projects/Ryan/ortholog_sims/pipeline_dev/Caeno_Scan/test_data/test_gm/${sp}/${sp}_all_snps.txt" \
+                                ]} \
+    // create a tuple
+    .map { sp, strain_set, vcf, vcf_tbi, snp_list -> [sp, strain_set, vcf, vcf_tbi, snp_list]} 
     
 //     prepare_sim_plink(prep_gm_ins)
     
 //     prepare_sim_gm(prep_gm_ins)
     
 //     // combine the plink files and the genotype matrix generated with the selected SNPs usisng sp and strain set ids
-//     pop_sim_marker_files = prepare_sim_plink.out.join(prepare_sim_gm.out, by:[0,1])
-    
-//     pop_sim_marker_files.view()
+
     
     // eigen
     //contigs = Channel.from("1")
@@ -93,6 +91,11 @@ og_cv_script = Channel.fromPath("${params.bin_dir}/sim_og_effects.py")
     //contigs.combine(prepare_sim_gm.out) // Combine with Plink files and Genotype matrix + Sim INFO
     //    .combine(Channel.fromPath("bin/Get_GenoMatrix_Eigen.R")) | chrom_eigen_variants_sims_repeated
     
+    // pop_sim_marker_files = prepare_sim_plink.out
+    //     .join(prepare_sim_gm.out, by:[0,1])
+    //     .join(chrom_eigen_variants_sims_repeated.out, by:[0,1])
+    
+    //pop_sim_marker_files.view()
 
     // Simulation parameter channels
     File sim_key_file = new File("test_data/repeated_sim_keys.txt") ;
@@ -121,6 +124,11 @@ og_cv_script = Channel.fromPath("${params.bin_dir}/sim_og_effects.py")
     
     //snps_pool.view()
     simulate_orthogroup_effects(snps_pool)
+
+    // combine the output of the sumulation data to the
+    prep_gm_ins
+        .combine(simulate_orthogroup_effects.out, by:[0,1])
+        .view()
 }
 // load the data to simulate phenotypes 
 // sp_causal_snps_inputs = [
