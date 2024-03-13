@@ -124,13 +124,44 @@ process simulate_orthogroup_effects {
     """
 }
 
+process_sim_phenos {
+    label 'sim_map_phenos'
+    
+
+    //errorStrategy 'retry'
+    container = 'andersenlab/nemascan:20220407173056db3227'
+    //publishDir "${params.out}/Simulations/${sp}/${SIMID}/Mappings", pattern: "*fastGWA", overwrite: true
+    //publishDir "${params.out}/Simulations/${sp}/${SIMID}/Mappings", pattern: "*loco.mlma", overwrite: true
+    publishDir "${params.out}/Phenotypes/", pattern: "*.phen", overwrite: true
+    publishDir "${params.out}/Phenotypes/", pattern: "*.par", overwrite: true
+
+    cpus 5
+    time '20m'
+    memory 10.GB
+
+    input:
+        tuple val(sp), val(strain_set), path(bed), path(bim), path(fam), path(map), path(nosex), path(ped), path(log), path(gm), path(n_indep_tests), val(SIMID), path(loci), val(H2), path(check_vp)
+
+    output:
+        tuple val(sp), val(strain_set), val(SIMREP), path("${SIMREP}}_${sp}_${strain_set}_sims.phen"), path("${SIMREP}_${sp}_${strain_set}_sims.par")
+    """
+        gcta64 --bfile TO_SIMS \\
+         --simu-qt \\
+         --simu-causal-loci ${loci} \\
+         --simu-hsq ${H2} \\
+         --simu-rep 1 \\
+         --thread-num 5 \\
+         --out ${SIMREP}_${sp}_${strain_set}_sims
+    """
+}
+
 process simulate_map_phenotypes {
 
     label 'sim_map_phenos'
-    tag {"${SIMREP} - ${H2} - ${MAF}"}
+    //tag {"${SIMREP} - ${H2} - ${MAF}"}
 
-    errorStrategy 'retry'
-    container = 'andersenlab/nemascan:20220407173056db3227'
+    //errorStrategy 'retry'
+    //container = 'andersenlab/nemascan:20220407173056db3227'
     publishDir "${params.out}/Simulations/${sp}/${SIMID}/Mappings", pattern: "*fastGWA", overwrite: true
     publishDir "${params.out}/Simulations/${sp}/${SIMID}/Mappings", pattern: "*loco.mlma", overwrite: true
     publishDir "${params.out}/Simulations/${sp}/${SIMID}/Phenotypes", pattern: "*.phen", overwrite: true
