@@ -17,7 +17,7 @@ params.ci_size = 150
 sthresh= "BF"
 params.maf = 0.05
 
-include {prepare_sim_gm; prepare_sim_plink; chrom_eigen_variants_sims_repeated; collect_eigen_variants_sims_repeated; simulate_orthogroup_effects} from './modules/repeated_simulations_v2.nf'
+include {prepare_sim_gm; prepare_sim_plink; chrom_eigen_variants_sims_repeated; collect_eigen_variants_sims_repeated; simulate_orthogroup_effects; sim_phenos} from './modules/repeated_simulations_v2.nf'
 
 // load the population data from the input folder
 
@@ -136,7 +136,7 @@ prep_gm_ins = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae", "${cb_
         .combine(simulate_orthogroup_effects.out, by:[0,1])
         .combine(trait_h2)
         .combine(Channel.fromPath("${params.bin_dir}/check_vp.py"))
-        .view()
+        | sim_phenos
 }
 // load the data to simulate phenotypes 
 // sp_causal_snps_inputs = [
