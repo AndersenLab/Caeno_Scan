@@ -112,7 +112,7 @@ process simulate_orthogroup_effects {
     publishDir "${params.out}/Simulations/${SIMID}/causal_vars", pattern: "*txt", overwrite: true
 
     input:
-        tuple val(sp), val(strain_set), file(all_pop_snps_anno_bim), file(create_causal_qtls), val(SIMREP), val(OGS) 
+        tuple val(sp), val(strain_set), path(all_pop_snps_anno_bim), path(create_causal_qtls), val(SIMREP), val(OGS) 
 
     output:
         tuple val(sp), val(strain_set), val(SIMREP), path("${sp}_${strain_set}_${MAF}_${SIMID}_${SIMREP}_causal_og_vars.txt")
