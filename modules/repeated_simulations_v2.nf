@@ -151,7 +151,7 @@ process simulate_orthogroup_effects {
     """
 }
 
-process_sim_phenos {
+process sim_phenos {
     label 'sim_map_phenos'
     
     executor 'local'
