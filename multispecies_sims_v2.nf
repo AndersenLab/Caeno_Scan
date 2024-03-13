@@ -64,6 +64,10 @@ ct_pop_id = "ct.fullpop"
 //input channel for GM with one species for testing
 
 workflow{
+
+// define the script to select causal vars
+og_cv_script = Channel.fromPath("${params.bin_dir}/sim_og_effects.py")
+
 prep_gm_ins = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae", "${cb_pop_id}"] ) \
     .map { sp, strain_set -> [sp, \
                                 strain_set, \
