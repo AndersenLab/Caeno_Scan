@@ -107,10 +107,12 @@ process simulate_orthogroup_effects {
     //errorStrategy 'ignore'
     executor 'local'
     //conda '/home/rjm6024/.conda/envs/vcf_stats_1.0'
+    conda  '/Users/ryanmckeown/anaconda3/envs/dev_env'
 
+    publishDir "${params.out}/Simulations/${SIMID}/causal_vars", pattern: "*txt", overwrite: true
 
     input:
-        tuple val(OGS), val(SIMREP), val(sp), val(strain_set), path(all_pop_snps_anno_bim), path(create_causal_qtls)
+        tuple val(sp), val(strain_set), file(all_pop_snps_anno_bim), file(create_causal_qtls), val(SIMREP), val(OGS) 
 
     output:
         tuple val(sp), val(strain_set), val(SIMREP), path("${sp}_${strain_set}_${MAF}_${SIMID}_${SIMREP}_causal_og_vars.txt")
