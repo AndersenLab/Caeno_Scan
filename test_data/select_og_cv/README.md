@@ -1,0 +1,1 @@
+Data to test the script `sim_og_effects.py`
