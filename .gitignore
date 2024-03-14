@@ -48,3 +48,4 @@ test_data/c_tropicalis/ct.comp.map/ct.comp.map_0.05.frq
 test_data/selected_markers/20240306_Selected_SNPs_MAF/*
 test_data/select_og_cv/ct.fullpop_0.00.bim.bed.annotated.gene_markers.tsv
 test_data/select_og_cv/20240306_Orthogroup_Analysis/
+20240304_fullpopulation_simfiles_0.00_noLD.log

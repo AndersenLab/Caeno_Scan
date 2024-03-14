@@ -216,34 +216,26 @@ process simulate_map_phenotypes {
         tuple val(sp), val(strain_set), val(SIMREP), val(H2), file(loci), file(gm), file(n_indep_tests), val(MAF),val(SIMID), val(OGS), file("${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_lmm-exact_inbred.fastGWA"), file("${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_lmm-exact_inbred_pca.fastGWA"),file("${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_lmm-exact.loco.mlma"), file("${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_lmm-exact_pca.loco.mlma"), file("${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sims.phen"), file("${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sims.par"),emit: gcta_intervals
 
     """
-    gcta64 --bfile TO_SIMS \\
-         --simu-qt \\
-         --simu-causal-loci ${loci} \\
-         --simu-hsq ${H2} \\
-         --simu-rep 1 \\
-         --thread-num 5 \\
-         --out ${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sims
     plink --bfile TO_SIMS \\
         --make-bed \\
         --snps-only \\
         --biallelic-only \\
-        --maf ${MAF} \\
         --set-missing-var-ids @:# \\
         --geno \\
         --recode \\
-        --out TO_SIMS_${SIMREP}_${MAF}_${SIMID}_${sp}_${strain_set} \\
+        --out TO_SIMS_${SIMREP}_${sp}_${strain_set} \\
         --allow-extra-chr \\
-        --pheno ${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sims.phen
-    gcta64 --bfile TO_SIMS_${SIMREP}_${MAF}_${SIMID}_${sp}_${strain_set} \\
+        --pheno ${SIMREP}_${sp}_${strain_set}_${H2}_sims
+    gcta64 --bfile TO_SIMS_${SIMREP}_${sp}_${strain_set} \\
             --autosome --maf ${MAF} --make-grm \\
             --out TO_SIMS_${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_gcta_grm \\
             --thread-num 5
-    gcta64 --bfile TO_SIMS_${SIMREP}_${MAF}_${SIMID}_${sp}_${strain_set} \\
+    gcta64 --bfile TO_SIMS_${SIMREP}_${sp}_${strain_set} \\
             --autosome --maf ${MAF} --make-grm-inbred \\
             --out TO_SIMS_${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_gcta_grm_inbred \\
             --thread-num 5
     gcta64 --grm TO_SIMS_${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_gcta_grm_inbred \\
-            --pheno ${SIMREP}_${H2}_${MAF}_${SIMID}_${sp}_${strain_set}_sims.phen \\
+            --pheno ${SIMREP}_${sp}_${strain_set}_${H2}_sims.phen \\
             --reml --out check_vp \\
             --thread-num 5
     
