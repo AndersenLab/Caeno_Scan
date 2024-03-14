@@ -167,12 +167,12 @@ process sim_phenos {
     memory 10.GB
 
     input:
-        tuple val(sp), val(strain_set), path(bed), path(bim), path(fam), path(map), path(nosex), path(ped), path(log), path(gm), path(n_indep_tests), val(SIMREP), path(loci), val(H2), path(check_vp)
+        tuple val(sp), val(strain_set), path(bed), path(bim), path(fam), val(SIMREP), path(loci), val(H2)
 
     output:
         tuple val(sp), val(strain_set), val(SIMREP), path("${SIMREP}_${sp}_${strain_set}_sims.phen"), path("${SIMREP}_${sp}_${strain_set}_sims.par")
     """
-        gcta64 --bfile TO_SIMS \\
+        gcta64 --bfile ${strai_set} \\
          --simu-qt \\
          --simu-causal-loci ${loci} \\
          --simu-hsq ${H2} \\

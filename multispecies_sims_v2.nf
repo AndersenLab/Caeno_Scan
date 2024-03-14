@@ -78,29 +78,39 @@ prep_gm_ins = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae", "${cb_
     // create a tuple
     .map { sp, strain_set, vcf, vcf_tbi, snp_list -> [sp, strain_set, vcf, vcf_tbi, snp_list]} 
     
-    prepare_sim_plink(prep_gm_ins)
+    all_pop_snps_plink = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae", "${cb_pop_id}"] ) \
+        .map { sp, strain_set -> [sp, \
+                                    strain_set, \
+                                    "/projects/b1059/projects/Ryan/ortholog_sims/Caeno_Scan/proc_data/20240314_fullpopulation_simfiles_noLD_0.00/${sp}/${strain_set}.bim", \
+                                    "/projects/b1059/projects/Ryan/ortholog_sims/Caeno_Scan/proc_data/20240314_fullpopulation_simfiles_noLD_0.00/${sp}/${strain_set}.bed", \
+                                    "/projects/b1059/projects/Ryan/ortholog_sims/Caeno_Scan/proc_data/20240314_fullpopulation_simfiles_noLD_0.00/${sp}/${strain_set}.fam", \
+                                    ]} \
+
+        .map { sp, strain_set, bim, bed, fam -> [sp, strain_set, all_bim, all_bed, all_fam]}
+        
+    //prepare_sim_plink(prep_gm_ins)
     
-    prepare_sim_gm(prep_gm_ins)
+    //prepare_sim_gm(prep_gm_ins)
     
 //     // combine the plink files and the genotype matrix generated with the selected SNPs usisng sp and strain set ids
 
     
     // eigen
-    contigs = Channel.from("1")
-    //contigs = Channel.from(["1", "2", "3", "4", "5", "6"]) //Parallelize by chrom
-    contigs.combine(prepare_sim_gm.out) // Combine with Plink files and Genotype matrix + Sim INFO
-       .combine(Channel.fromPath("bin/Get_GenoMatrix_Eigen.R")) | chrom_eigen_variants_sims_repeated
+    // contigs = Channel.from("1")
+    // //contigs = Channel.from(["1", "2", "3", "4", "5", "6"]) //Parallelize by chrom
+    // contigs.combine(prepare_sim_gm.out) // Combine with Plink files and Genotype matrix + Sim INFO
+    //    .combine(Channel.fromPath("bin/Get_GenoMatrix_Eigen.R")) | chrom_eigen_variants_sims_repeated
 
-    chrom_eigen_variants_sims_repeated.out
-    .groupTuple(by:[0,1]) // Group by species and strain set
-    | collect_eigen_variants_sims_repeated
+    // chrom_eigen_variants_sims_repeated.out
+    // .groupTuple(by:[0,1]) // Group by species and strain set
+    // | collect_eigen_variants_sims_repeated
     
-    //prepare the simulation marker files    
-    pop_sim_marker_files = prepare_sim_plink.out
-        .join(prepare_sim_gm.out, by:[0,1])
-        .join(collect_eigen_variants_sims_repeated.out, by:[0,1])
+    // //prepare the simulation marker files    
+    // pop_sim_marker_files = prepare_sim_plink.out
+    //     .join(prepare_sim_gm.out, by:[0,1])
+    //     .join(collect_eigen_variants_sims_repeated.out, by:[0,1])
     
-    pop_sim_marker_files.view()
+    // pop_sim_marker_files.view()
 
     // Simulation parameter channels
     File sim_key_file = new File("test_data/repeated_sim_keys.txt") ;
@@ -132,10 +142,9 @@ prep_gm_ins = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae", "${cb_
     trait_h2 = Channel.fromPath("${workflow.projectDir}/test_data/h2.csv").splitCsv()
 
     // combine the output of the sumulation data to the
-    pop_sim_marker_files
+    all_pop_snps_plink
         .combine(simulate_orthogroup_effects.out, by:[0,1])
         .combine(trait_h2)
-        .combine(Channel.fromPath("${params.bin_dir}/check_vp.py"))
         | sim_phenos
 }
 // load the data to simulate phenotypes 
