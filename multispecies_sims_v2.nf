@@ -81,12 +81,12 @@ prep_gm_ins = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae", "${cb_
     all_pop_snps_plink = Channel.from( ["c_elegans", "${ce_pop_id}"], ["c_briggsae", "${cb_pop_id}"] ) \
         .map { sp, strain_set -> [sp, \
                                     strain_set, \
-                                    "/projects/b1059/projects/Ryan/ortholog_sims/Caeno_Scan/proc_data/20240314_fullpopulation_simfiles_noLD_0.00/${sp}/${strain_set}.bim", \
-                                    "/projects/b1059/projects/Ryan/ortholog_sims/Caeno_Scan/proc_data/20240314_fullpopulation_simfiles_noLD_0.00/${sp}/${strain_set}.bed", \
-                                    "/projects/b1059/projects/Ryan/ortholog_sims/Caeno_Scan/proc_data/20240314_fullpopulation_simfiles_noLD_0.00/${sp}/${strain_set}.fam", \
+                                    "/projects/b1059/projects/Ryan/ortholog_sims/Caeno_Scan/proc_data/20240314_fullpopulation_simfiles_noLD_0.00/${sp}/${strain_set}/${strain_set}.bim", \
+                                    "/projects/b1059/projects/Ryan/ortholog_sims/Caeno_Scan/proc_data/20240314_fullpopulation_simfiles_noLD_0.00/${sp}/${strain_set}/${strain_set}.bed", \
+                                    "/projects/b1059/projects/Ryan/ortholog_sims/Caeno_Scan/proc_data/20240314_fullpopulation_simfiles_noLD_0.00/${sp}/${strain_set}/${strain_set}.fam" \
                                     ]} \
-
-        .map { sp, strain_set, bim, bed, fam -> [sp, strain_set, all_bim, all_bed, all_fam]}
+        //create a tuple
+        .map { sp, strain_set, all_bim, all_bed, all_fam -> [sp, strain_set, all_bim, all_bed, all_fam]}
         
     //prepare_sim_plink(prep_gm_ins)
     

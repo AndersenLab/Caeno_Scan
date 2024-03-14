@@ -172,7 +172,7 @@ process sim_phenos {
     output:
         tuple val(sp), val(strain_set), val(SIMREP), path("${SIMREP}_${sp}_${strain_set}_sims.phen"), path("${SIMREP}_${sp}_${strain_set}_sims.par")
     """
-        gcta64 --bfile ${strai_set} \\
+        gcta64 --bfile ${strain_set} \\
          --simu-qt \\
          --simu-causal-loci ${loci} \\
          --simu-hsq ${H2} \\
