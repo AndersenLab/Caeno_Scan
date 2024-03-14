@@ -23,12 +23,12 @@ maf_file = Channel.fromPath("input_data/all_species/simulate_maf.csv").splitCsv(
 
 workflow{
     //load the strain set file 
-    File pop_file = new File("/projects/b1059/projects/Ryan/ortholog_sims/20230614_pre_sim_ogs/data/08.18.23_all_outliers.txt") ;
+    File pop_file = new File("/projects/b1059/projects/Ryan/ortholog_sims/pipeline_dev/Caeno_Scan/proc_data/20240314_fullpopulation_simfiles_noLD_0.00/20240304_popfiles.txt") ;
     
     //Array used to attach the correct vcf to strain sets 
-    sp_ids = [["c_elegans", "/projects/b1059/data/c_elegans/WI/variation/20220216/vcf/WI.20220216.hard-filter.isotype.vcf.gz", "/projects/b1059/data/c_elegans/WI/variation/20220216/vcf/WI.20220216.hard-filter.isotype.vcf.gz.tbi"],
-                ["c_briggsae", "/projects/b1059/data/c_briggsae/WI/variation/20210803/vcf/WI.20210803.hard-filter.isotype.vcf.gz", "/projects/b1059/data/c_briggsae/WI/variation/20210803/vcf/WI.20210803.hard-filter.isotype.vcf.gz.tbi"],
-                ["c_tropicalis", "/projects/b1059/data/c_tropicalis/WI/variation/20210901/vcf/WI.20210901.hard-filter.isotype.vcf.gz", "/projects/b1059/data/c_tropicalis/WI/variation/20210901/vcf/WI.20210901.hard-filter.isotype.vcf.gz.tbi"]]
+sp_ids = [["c_elegans", "/projects/b1059/data/c_elegans/WI/variation/20231213/vcf/WI.20231213.hard-filter.isotype.vcf.gz", "/projects/b1059/data/c_elegans/WI/variation/20231213/vcf/WI.20231213.hard-filter.isotype.vcf.gz.tbi"],
+            ["c_briggsae", "/projects/b1059/data/c_briggsae/WI/variation/20240129/vcf/WI.20240129.hard-filter.isotype.vcf.gz", "/projects/b1059/data/c_briggsae/WI/variation/20240129/vcf/WI.20240129.hard-filter.isotype.vcf.gz.tbi"],
+            ["c_tropicalis", "/projects/b1059/data/c_tropicalis/WI/variation/20231201/vcf/WI.20231201.hard-filter.isotype.vcf.gz", "/projects/b1059/data/c_tropicalis/WI/variation/20231201/vcf/WI.20231201.hard-filter.isotype.vcf.gz.tbi"]]
 if(params.ld == false) {
 
 Channel.from(pop_file.collect { it.tokenize( ' ' ) })
@@ -79,6 +79,8 @@ process prepare_simulation_files {
     publishDir "${params.out}/${sp}/${strain_set}", pattern: "*vcf.gz", overwrite: true
     publishDir "${params.out}/${sp}/${strain_set}", pattern: "*vcf.gz.tbi", overwrite: true
     publishDir "${params.out}/${sp}/${strain_set}", pattern: "*bim", overwrite: true
+    publishDir "${params.out}/${sp}/${strain_set}", pattern: "*bed", overwrite: true
+    publishDir "${params.out}/${sp}/${strain_set}", pattern: "*fam", overwrite: true
     publishDir "${params.out}/${sp}/${strain_set}", pattern: "*log", overwrite: true
     publishDir "${params.out}/${sp}/${strain_set}", pattern: "*frq", overwrite: true
 
@@ -87,9 +89,7 @@ process prepare_simulation_files {
         tuple val(sp), val(strain_set), val(strains), file(vcf), file(index), file(num_chroms), val(MAF)
 
     output:
-        tuple val(strain_set), val(strains), file("${strain_set}_${MAF}.bed"), file("${strain_set}_${MAF}.bim"), file("${strain_set}_${MAF}.fam"), file("${strain_set}_${MAF}.map"), file("${strain_set}_${MAF}.nosex"), file("${strain_set}_${MAF}.ped"), file("${strain_set}_${MAF}.log"), file("${strain_set}_${MAF}_Genotype_Matrix.tsv"),  val(MAF), file("${strain_set}_${MAF}.frq"),  emit: sim_geno
-        tuple val(strain_set), val(strains), val(MAF), file("renamed_chroms.vcf.gz"), file("renamed_chroms.vcf.gz.tbi"), emit: renamed_chrom_vcf_to_ld // This output is no longer used. Should be removed in the future.
-
+        tuple val(strain_set), val(strains), file("${strain_set}.bed"), file("${strain_set}.bim"), file("${strain_set}.fam"), file("${strain_set}.map"), file("${strain_set}.nosex"), file("${strain_set}.ped"), file("${strain_set}.log"), file("${strain_set}.frq")
 
     """
     bcftools annotate --rename-chrs ${num_chroms} ${vcf} |\\
@@ -102,44 +102,12 @@ process prepare_simulation_files {
     --make-bed \\
     --snps-only \\
     --biallelic-only \\
-    --maf ${MAF} \\
     --set-missing-var-ids @:# \\
     --geno \\
     --recode \\
-    --out ${strain_set}_${MAF} \\
-    --allow-extra-chr
-
-    plink --vcf renamed_chroms.vcf.gz \\
-    --snps-only \\
-    --biallelic-only \\
-    --maf ${MAF} \\
-    --set-missing-var-ids @:# \\
-    --geno \\
     --freq \\
-    --out ${strain_set}_${MAF}
-
-    awk -F":" '\$1=\$1' OFS="\\t" plink.prune.in | \\
-    sort -k1,1d -k2,2n > markers.txt
-    bcftools query -l renamed_chroms.vcf.gz |\\
-    sort > sorted_samples.txt
-    
-    bcftools view -v snps \\
-    -S sorted_samples.txt \\
-    -R markers.txt \\
-    renamed_chroms.vcf.gz |\\
-    bcftools query --print-header -f '%CHROM\\t%POS\\t%REF\\t%ALT[\\t%GT]\\n' |\\
-    sed 's/[[# 0-9]*]//g' |\\
-    sed 's/:GT//g' |\\
-    sed 's/0|0/-1/g' |\\
-    sed 's/1|1/1/g' |\\
-    sed 's/0|1/NA/g' |\\
-    sed 's/1|0/NA/g' |\\
-    sed 's/.|./NA/g'  |\\
-    sed 's/0\\/0/-1/g' |\\
-    sed 's/1\\/1/1/g'  |\\
-    sed 's/0\\/1/NA/g' |\\
-    sed 's/1\\/0/NA/g' |\\
-    sed 's/.\\/./NA/g' > ${strain_set}_${MAF}_Genotype_Matrix.tsv
+    --out ${strain_set} \\
+    --allow-extra-chr
     """
 }
 
@@ -153,6 +121,8 @@ process prepare_simulation_files_ld {
     publishDir "${params.out}/${sp}/${strain_set}", pattern: "*vcf.gz", overwrite: true
     publishDir "${params.out}/${sp}/${strain_set}", pattern: "*vcf.gz.tbi", overwrite: true
     publishDir "${params.out}/${sp}/${strain_set}", pattern: "*bim", overwrite: true
+    publishDir "${params.out}/${sp}/${strain_set}", pattern: "*bed", overwrite: true
+    publishDir "${params.out}/${sp}/${strain_set}", pattern: "*fam", overwrite: true
     publishDir "${params.out}/${sp}/${strain_set}", pattern: "*log", overwrite: true
     publishDir "${params.out}/${sp}/${strain_set}", pattern: "*frq", overwrite: true
 
