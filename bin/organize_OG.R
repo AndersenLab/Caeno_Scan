@@ -102,9 +102,9 @@ OG_structure <- cpOG[, c("Orthogroup", "Ratio")]
 one_one_one_og_var <- subset(OG_structure, Ratio == "1:1:1")
 
 # Load the annotated tsv files
-ce_annotated <- readr::read_tsv(params$elegans_annotated)
-cb_annotated <- readr::read_tsv(params$briggsae_annotated)
-ct_annotated <- readr::read_tsv(params$tropicalis_annotated)
+ce_annotated <- read.csv(params$elegans_annotated, sep='\t' )
+cb_annotated <-  read.csv(params$briggsae_annotated, sep='\t')
+ct_annotated <- read.csv(params$tropicalis_annotated, sep='\t')
 
 # Venn Diagram
 ce_one_one_one_var_ogs <- merge(one_one_one_og_var, ce_annotated, by = "Orthogroup")  %>%
@@ -121,8 +121,9 @@ ct_one_one_one_filt <- merge(one_one_one_og_var, ct_annotated, by = "Orthogroup"
 
 venn.diagram(
   x = list(ce_one_one_one_var_ogs, cb_one_one_one_var_ogs, ct_one_one_one_var_ogs),
-  category.names = c("C. elegans" , "C. briggsae " , "C. tropicalis"),
-  filename = glue::glue("{figure_dir}/{date}_overlap_1_1_1_var_ogs.png"),
+  category.names = c("C. elegans" , "C. briggsae " , "C. tropicalis"), 
+  filename = glue::glue("{figure_dir}/{date}_overlap_1_1_1_var_ogs.png"), 
+  fill = c("#DB6333", "#53886C", "#0719BC"),
   output=TRUE,
   imagetype="png"
 )
@@ -213,16 +214,18 @@ ct_avgMAF$species <- "Tropicalis"
 all_data <- bind_rows(ce_avgMAF, cb_avgMAF, ct_avgMAF)
 
 # Create histogram and save it
-ceMAF_hist <- ggplot(all_data, aes(x = average_MAF, fill = species)) +
+c_allMAF_hist <- ggplot(all_data, aes(x = average_MAF, fill = species)) +
   geom_histogram(color = "black", position = "identity", alpha = 0.7, bins = 30) +
   theme(axis.text = element_text(size = 14),
         axis.title = element_text(size = 16, face = "bold"),
         title = element_text(size = 18, face = 'bold')) +
-  labs(title = "Histogram of MAF Averages by Species",
-       x = "MAF Averages",
+  theme_bw() +
+  labs(title = "Histogram of MAF by Species",
+       x = "MAF",
        y = "Count") +
+  theme(axis.text=element_text(size=14), axis.title=element_text(size=16,face="bold"), title =element_text(size=18, face='bold')) +
   facet_grid(. ~ species) +
-  scale_fill_manual(values = c("Elegans" = "lightblue", "Briggsae" = "pink", "Tropicalis" = "darkgrey"))
+  scale_fill_manual(values = c("Elegans" = "#DB6333", "Briggsae" = "#53886C", "Tropicalis" = "#0719BC"))
 
 ggsave(
   glue::glue("{figure_dir}/{date}.all_species_MAF.png"),
