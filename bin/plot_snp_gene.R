@@ -14,7 +14,6 @@ date <- format(Sys.time(), "%Y%m%d_%H%M")
 out_dir = glue::glue("analysis/{date}_test_marker_gene")
 
 params <- list( 
-  
   elegans_annotated = "c_elegans/ce.fullpop/gene_markers.tsv",
   briggsae_annotated = "c_briggsae/cb.fullpop/gene_markers.tsv",
   tropicalis_annotated = "c_tropicalis/ct.fullpop/gene_markers.tsv",
@@ -60,18 +59,15 @@ count_genes <- function(df) {
   
 }
 
-
-
 # test function
 genes_elegans <- count_genes(ce_annotated)
 genes_briggsae <- count_genes(cb_annotated)
 genes_tropicalis <- count_genes(ct_annotated)
 #Plot the counts
-elegans_hist<- ggplot(genes_elegans, aes(x = Count)) + geom_histogram(fill = 'cyan', color = "black", binwidth = 1) +
+elegans_hist<- ggplot(genes_elegans, aes(x = Count)) + geom_histogram(fill = "#DB6333", color = "black", binwidth = 1) +
   labs(title = "Histogram of Elegans Counts",
        x = "Number SNPs per Gene",
        y = "Frequency")
-#print(elegans_hist)
 
 ggsave(
   glue::glue("{figure_dir}/{date}.elegans_hist.png"),
@@ -83,11 +79,11 @@ ggsave(
   dpi = 300
 )
 
-briggsae_hist<- ggplot(genes_briggsae, aes(x = Count)) + geom_histogram(fill = "deeppink", color = "black", binwidth = 1) +
+briggsae_hist<- ggplot(genes_briggsae, aes(x = Count)) + geom_histogram(fill = "#53886C", color = "black", binwidth = 10) +
   labs(title = "Histogram of Birggsae Counts",
        x = "Number SNPs per Gene",
        y = "Frequency")
-#print(briggsae_hist)
+
 
 ggsave(
   glue::glue("{figure_dir}/{date}.briggsae_hist.png"),
@@ -99,11 +95,11 @@ ggsave(
   dpi = 300
 )
 
-tropicalis_hist<- ggplot(genes_tropicalis, aes(x = Count)) + geom_histogram(fill = "blueviolet", color = "black", binwidth = 1) +
+tropicalis_hist<- ggplot(genes_tropicalis, aes(x = Count)) + geom_histogram(fill = "#0719BC", color = "black", binwidth = 1) +
   labs(title = "Histogram of Tropicalis Counts",
        x = "Number SNPs per Gene",
        y = "Frequency")
-#print(tropicalis_hist)
+
 
 ggsave(
   glue::glue("{figure_dir}/{date}.tropicalis_hist.png"),
@@ -125,16 +121,19 @@ genes_tropicalis$Species <- "Tropicalis"
 ## combine all the data
 all_counts <- rbind(genes_elegans, genes_briggsae, genes_tropicalis)
 
-
+library(ggbreak) 
 ## plot the data
-all_counts_plot <- ggplot(all_counts, aes(x = Count)) + geom_histogram(fill = 'green', color = "black", binwidth = 1) +
-  labs(title = "Histogram of Counts w 100 bp buffer",
+all_counts_plot <- ggplot(all_counts, aes(x = Count)) + geom_histogram(binwidth = 1) +
+  labs(title = "Histogram of SNPs per Gene",
        x = "Number SNPs per Gene",
        y = "Frequency") +
-  facet_grid(Species ~ ., scales = "fixed")
+  theme_bw() +
+  facet_grid(Species ~ ., scales = "fixed") +
+  scale_fill_manual(values = c("Elegans" = "#DB6333", "Briggsae" = "#53886C", "Tropicalis" = "#0719BC")) +
+  ylim(0,500)+ #looking at lower frequencies, can modify this for what is needed 
+  xlim(0,500)
 
-#print(all_counts_plot)
-
+all_counts_plot
 ggsave(
   glue::glue("{figure_dir}/{date}.all_counts_plot.png"),
   plot = all_counts_plot,
@@ -144,8 +143,6 @@ ggsave(
   units = "in",
   dpi = 300
 )
-
-
 
 
 
