@@ -7,6 +7,7 @@ library(ggplot2)
 library(data.table)
 library(optparse)
 library(VennDiagram)
+library("ggVennDiagram")
 
 #get date and time format as a variable YYYYMMDD_HHMM
 date <- format(Sys.time(), "%Y%m%d_%H%M")
@@ -45,36 +46,7 @@ if (!dir.exists(figure_dir)) {
 OG <- readr::read_tsv(params$OG_master)
 colnames(OG) <- c("Orthogroup", 'WB_ID', 'WB_alias', 'seqname', "Elegans", "Briggsae", "Tropicalis")
 cpOG <- OG %>% 
-  select(Orthogroup, Elegans, Briggsae, Tropicalis) #%>%
-  #separate_rows(Gene_ID, sep = ",") %>%
-  #separate_rows(Gene_ID, sep = " ")
-# OG <- mutate(OG, Gene_ID =paste(Briggsae, Tropicalis, Elegans)) %>%
-#   select(-Briggsae) %>%
-#   select(-Tropicalis) %>%
-#   select(-Elegans) %>%
-#   separate_rows(Gene_ID, sep = ",") %>%
-#   separate_rows(Gene_ID, sep = " ")
-# OG$Gene_ID <- sub("Transcript_", "", OG$Gene_ID)
-# OG$Gene_ID <- sub("transcript_", "", OG$Gene_ID)
-
-# # function to add OGs
-# add_OG <- function(abim, ortho) {
-#   # Join the two tables based on 'Gene_ID'
-#   merged_data <- left_join(abim, ortho, by = "Gene_ID")
-#   # Group by 'Gene_ID' and make 'OG_list' as a list of unique OG values
-#   result <- merged_data %>%
-#     group_by(Gene_ID) %>%
-#     summarize(OG_list = list(unique(Orthogroup, na.rm = TRUE)))
-#   # Merge the summarized result back to the original
-#   final_data <- left_join(abim, result, by = "Gene_ID")
-#   return(merged_data)
-# }
-# test function with elegans
-# OG_elegans <- add_OG(annotated_elegans, OG)
-# # test function with briggsae
-# OG_briggsae <- add_OG(annotated_briggsae, OG)
-# # test function with tropicalis
-# OG_tropicalis <- add_OG(annotated_tropicalis, OG)
+  select(Orthogroup, Elegans, Briggsae, Tropicalis) 
 
 # create 1:1:1 OGs
 # Function to determine the label based on count
@@ -119,14 +91,39 @@ ct_one_one_one_var_ogs <- merge(one_one_one_og_var, ct_annotated, by = "Orthogro
   pull(Orthogroup)
 ct_one_one_one_filt <- merge(one_one_one_og_var, ct_annotated, by = "Orthogroup")
 
-venn.diagram(
-  x = list(ce_one_one_one_var_ogs, cb_one_one_one_var_ogs, ct_one_one_one_var_ogs),
-  category.names = c("C. elegans" , "C. briggsae " , "C. tropicalis"), 
-  filename = glue::glue("{figure_dir}/{date}_overlap_1_1_1_var_ogs.png"), 
-  fill = c("#DB6333", "#53886C", "#0719BC"),
-  output=TRUE,
-  imagetype="png"
+
+# Venn Diagram with black/bold numbers
+# venn.diagram(
+#   x = list(ce_one_one_one_var_ogs, cb_one_one_one_var_ogs, ct_one_one_one_var_ogs),
+#   category.names = c(expression(italic("C. elegans")), expression(italic("C. briggsae")), expression(italic("C. tropicalis"))), 
+#   filename = glue::glue("{figure_dir}/{date}_overlap_1_1_1_var_ogs.png"), 
+#   fill = c("#DB6333", "#53886C", "#0719BC"),
+#   output=TRUE,
+#   imagetype="png",
+#   cat.fontfamily = "Arial",
+#   cat.fontsize = 40,
+#   cat.fontface = "bold",
+#   cex = 1.5, # Adjust the size of the numbers
+#   fontfamily = "Arial",
+#   fontface = "bold",
+#   number.color = "white"
+# )
+
+# Venn diagram with white numbers:
+vd <- list(ce_one_one_one_var_ogs, cb_one_one_one_var_ogs, ct_one_one_one_var_ogs)
+names(vd) <- c("C. elegans", "C. briggsae", "C. tropicalis")
+
+one_one_oneVD <- ggvenn(vd,
+                        fill_color = c("#DB6333", "#53886C", "#0719BC"),
+                        stroke_size = 0.5,
+                        text_color = "white",
+                        text_size = 6,
+  
 )
+
+one_one_oneVD
+
+
 # getting the overlaps of all three
 # Convert the lists to vectors
 ce_vec <- unlist(ce_one_one_one_var_ogs)
@@ -146,7 +143,7 @@ average_MAF_df <- function(df) {
   # Group by gene_id and calculate the average MAF
   avg_MAF_df <- df %>%
     group_by(gene_id) %>%
-    summarize(average_MAF = mean(MAF, na.rm = TRUE))
+    summarize(MAF = mean(MAF, na.rm = TRUE))
   
   return(avg_MAF_df)
 }
@@ -157,7 +154,7 @@ cb_avgMAF <- average_MAF_df(cb_one_one_one_filt)
 ct_avgMAF <- average_MAF_df(ct_one_one_one_filt)
 
 # creating histogram with the average MAF
-ceMAF_hist<- ggplot(ce_avgMAF, aes(x = average_MAF)) + geom_histogram(color = "black") +
+ceMAF_hist<- ggplot(ce_avgMAF, aes(x = MAF)) + geom_histogram(color = "black") +
   theme(axis.text=element_text(size=14), axis.title=element_text(size=16,face="bold"), title =element_text(size=18, face='bold')) +
   labs(title = "Histogram of Elegans MAF Averages",
        x = "MAF Averages",
@@ -173,7 +170,7 @@ ggsave(
   dpi = 300
 )
 
-cbMAF_hist<- ggplot(cb_avgMAF, aes(x = average_MAF)) + geom_histogram(color = "black") +
+cbMAF_hist<- ggplot(cb_avgMAF, aes(x = MAF)) + geom_histogram(color = "black") +
   theme(axis.text=element_text(size=14), axis.title=element_text(size=16,face="bold"), title =element_text(size=18, face='bold')) +
   labs(title = "Histogram of Briggsae MAF Averages",
        x = "MAF Averages",
@@ -189,7 +186,7 @@ ggsave(
   dpi = 300
 )
 
-ctMAF_hist<- ggplot(ct_avgMAF, aes(x = average_MAF)) + geom_histogram(color = "black") +
+ctMAF_hist<- ggplot(ct_avgMAF, aes(x = MAF)) + geom_histogram(color = "black") +
   theme(axis.text=element_text(size=14), axis.title=element_text(size=16,face="bold"), title =element_text(size=18, face='bold')) +
   labs(title = "Histogram of Tropicalis MAF Averages",
        x = "MAF Averages",
@@ -214,28 +211,47 @@ ct_avgMAF$species <- "Tropicalis"
 all_data <- bind_rows(ce_avgMAF, cb_avgMAF, ct_avgMAF)
 
 # Create histogram and save it
-c_allMAF_hist <- ggplot(all_data, aes(x = average_MAF, fill = species)) +
-  geom_histogram(color = "black", position = "identity", alpha = 0.7, bins = 30) +
-  theme(axis.text = element_text(size = 14),
-        axis.title = element_text(size = 16, face = "bold"),
-        title = element_text(size = 18, face = 'bold')) +
+# c_allMAF_hist <- ggplot(all_data, aes(x = average_MAF, fill = species)) +
+#   geom_histogram(position = "identity", alpha = 0.7, bins = 30) +
+#   theme(axis.text = element_text(size = 14),
+#         axis.title = element_text(size = 16, face = "bold"),
+#         title = element_text(size = 18, face = 'bold')) +
+#   theme_bw() +
+#   labs(title = "Histogram of MAF by Species",
+#        x = "MAF",
+#        y = "Count") +
+#   theme(axis.text=element_text(size=14), axis.title=element_text(size=16,face="bold"), title =element_text(size=18, face='bold')) +
+#   facet_grid(. ~ species) +
+#   scale_fill_manual(values = c("Elegans" = "#DB6333", "Briggsae" = "#53886C", "Tropicalis" = "#0719BC"))
+c_allMAF_hist <- ggplot(all_data, aes(x = MAF, fill = species)) +
+  geom_histogram(bins = 30) +
+  theme(axis.text = element_text(size = 32),
+        axis.title = element_text(size = 28, face = "bold"), 
+        legend.position = "none", axis.line.x = element_blank(),  # Remove x-axis line
+        axis.ticks.x = element_blank(), 
+        axis.text.x = element_blank()) +  # Remove x-axis text) +
   theme_bw() +
-  labs(title = "Histogram of MAF by Species",
-       x = "MAF",
-       y = "Count") +
-  theme(axis.text=element_text(size=14), axis.title=element_text(size=16,face="bold"), title =element_text(size=18, face='bold')) +
-  facet_grid(. ~ species) +
-  scale_fill_manual(values = c("Elegans" = "#DB6333", "Briggsae" = "#53886C", "Tropicalis" = "#0719BC"))
+  labs(x = "Average Minor Allele Frequency",
+       y = "Count")  +
+  scale_fill_manual(values = c("Elegans" = "#DB6333", "Briggsae" = "#53886C", "Tropicalis" = "#0719BC")) +
+  facet_wrap(~ species, scales = "free", dir = 'v') +  # Separate histograms for each species
+  geom_vline(xintercept = 0.05, linetype = "dashed", color = "red") +  # Line for 0.05 MAF
+  xlim(0, 0.2) +   
+  theme(legend.position = "none") +
+  theme(strip.background = element_blank(),  # Remove background
+        strip.placement = "outside",  # Place strip labels outside
+        strip.text = element_blank()) + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())  # Remove strip text
 
 ggsave(
   glue::glue("{figure_dir}/{date}.all_species_MAF.png"),
-  plot = ceMAF_hist,
+  plot = c_allMAF_hist,
   device = "png",
   width = 15,
   height = 9,
   units = "in",
   dpi = 300
 )
+
 
 ## getting simulation data frame
 # new data frame with 500 rows
