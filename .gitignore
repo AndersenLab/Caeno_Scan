@@ -1,3 +1,6 @@
+.vscode/*
+
+
 test_data/vcfs/*
 test_data/plink_files/*
 test_data/master_snps/*
